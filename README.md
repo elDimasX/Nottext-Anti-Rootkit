@@ -3,8 +3,9 @@
 # Anti-Rootkit
 Essa ferramenta serve para verificar arquivos ocultos, que não poderiam ser acessados, também serve para buscar por processos escondidos, as funções funcionam porque são executadas em kernel-mode<br/>
 
-![Captura de tela 2021-09-13 154056](https://user-images.githubusercontent.com/51800283/133139231-04c109cf-54b1-428a-ba3f-9c3f66d26731.png)
-![Captura de tela 2021-09-13 154113](https://user-images.githubusercontent.com/51800283/133139240-d04ef87f-bc7e-4999-9266-be0e4afcf56d.png)
+![2021-09-15 (1)](https://user-images.githubusercontent.com/51800283/133702281-6c3a66ed-a240-44a4-b3ea-bd47421991ab.png)
+![2021-09-15 (2)](https://user-images.githubusercontent.com/51800283/133702286-0a7aebde-e3f6-40bc-b147-dd991b43a648.png)
+
 
 # Modo de teste
 Para testar o Nottext Anti-Rootkit, você precisa o Windows em modo de teste (testsigning on), e depois, executar o "Nottext Anti-Rootkit.exe", ele fará todo o resto
@@ -13,4 +14,17 @@ Para testar o Nottext Anti-Rootkit, você precisa o Windows em modo de teste (te
 Se você tiver alguma ideia de como posso melhorar meu anti-rootkit, por favor me avise
 
 # Atualizações futuras
-Eu ainda não terminei (nem estou perto) de completar meu anti-rootkit, portanto, fique de olho, eu postarei atualizações quando houver mudanças significativas somente.
+
+## 1.0.0.1
+Essa versão inclui atualização de correção de bugs:
+- Ocultação de processos
+- Melhoria na remoção de arquivos
+- Desligar ou reiniciar o computador a partir do kernel
+- Renomear de arquivo
+- Copiar arquivo
+
+## 1.0.0.0
+- Deletação de arquivos
+- Listar arquivos e pastas
+- Listar processos
+- Terminar processos e bloquea-los
