@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Security.Principal;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -73,14 +75,14 @@ namespace GUI
                 else
                 {
                     // Salve o driver de x86
-                    File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.sys", Properties.Resources.NottextAntiDriverX86);
+                    File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.sys", Properties.Resources.NottextAntiDriver);
                 }
 
                 // Salve o programa que atualiza os processos
                 File.WriteAllBytes(Application.StartupPath + "\\KernelProcessList.exe", Properties.Resources.KernelProcessList);
 
                 // Salve o CAT
-                File.WriteAllBytes(pastaDrivers + "deleteonboot.cat", Properties.Resources.deleteonboot);
+                File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.cat", Properties.Resources.nottextantidriver1);
 
                 // Salve o INF
                 File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.inf", Properties.Resources.NottextAntiDriverInf);
@@ -119,13 +121,63 @@ namespace GUI
         }
 
         /// <summary>
+        /// Verifique se o programa foi executado como administrador
+        /// </summary>
+        private static async Task ExecutandoAdministrador()
+        {
+            await Task.Delay(1);
+
+            // Novo indetificador
+            WindowsIdentity wi = WindowsIdentity.GetCurrent();
+
+            // Principal
+            var wp = new WindowsPrincipal(wi);
+
+            // Verifique se está rodando como administrador
+            bool executarComoAdmin = wp.IsInRole(WindowsBuiltInRole.Administrator);
+
+            // Se não estiver como administrador
+            if (!executarComoAdmin)
+            {
+                // Novo ProcessStartInfo
+                ProcessStartInfo processInfo = new ProcessStartInfo(
+                    // Local
+                    Assembly.GetExecutingAssembly().Location
+                );
+
+                // Configure para executar como administrador
+                processInfo.UseShellExecute = true;
+                processInfo.Verb = "runas";
+
+                try
+                {
+                    // Inicie novamente, mas com direitos adminstrativos
+                    Process.Start(processInfo);
+
+                    // Saia do aplicativo
+                    Environment.Exit(0);
+                }
+                catch (Exception)
+                {
+                    Environment.Exit(0); // Saia do aplicativo
+                }
+
+                // Saia do aplicativo
+                Environment.Exit(0);
+            }
+
+        }
+
+        /// <summary>
         /// Ponto de entrada principal para o aplicativo.
         /// </summary>
         [STAThread]
         static void Main()
         {
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
+            ExecutandoAdministrador().Wait();
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
             CarregarDriver().Wait();
 
             Application.Run(new Form1());

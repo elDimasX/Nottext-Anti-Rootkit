@@ -37,9 +37,7 @@
     <ApplicationIcon>DragoNottext.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup />
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -85,7 +83,6 @@
     <EmbeddedResource Include="Texto.resx">
       <DependentUpon>Texto.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -95,9 +92,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Resources\deleteonboot.cat" />
+    <None Include="Resources\nottextantidriver.cat" />
     <None Include="Resources\NottextAntiDriverX64.sys" />
-    <None Include="Resources\NottextAntiDriverX86.sys" />
+    <None Include="Resources\NottextAntiDriver.sys" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

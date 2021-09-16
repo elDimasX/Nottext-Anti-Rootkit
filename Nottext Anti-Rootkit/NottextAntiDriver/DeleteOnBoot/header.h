@@ -2,7 +2,10 @@
 
 #include <fltKernel.h>
 #include <ntstrsafe.h>
+#include "rootkitOperations.h"
 
+// Desativa os alertas de variaveis não iniciadas
+#pragma warning (disable: 4703)
 
 // ZwQuerySystemInformation
 NTSTATUS NTAPI ZwQuerySystemInformation(ULONG SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
@@ -10,6 +13,7 @@ NTSTATUS NTAPI ZwQuerySystemInformation(ULONG SystemInformationClass, PVOID Syst
 // LOG de pastas para escanear
 #define ARQUIVOS_LOG L"\\??\\C:\\ProgramData\\folderScan.txt"
 #define PROCESSOS_LOG L"\\??\\C:\\ProgramData\\processesScan.txt"
+PVOID ARQUIVO_LIDO = "\\??\\C:\\ProgramData\\fileReaded.txt";
 
 // Nome do dispositivo
 UNICODE_STRING DispositivoNome = RTL_CONSTANT_STRING(L"\\Device\\NtAntiRtDriver"), SysNome = RTL_CONSTANT_STRING(L"\\??\\NtAntiRtDriver");
@@ -35,6 +39,19 @@ PDEVICE_OBJECT DispositivoGlobal;
 
 #define DELETAR_PASTA CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0076, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
+#define SALVAR_ARQUIVO_PARA_COPIAR CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0078, METHOD_BUFFERED, FILE_ANY_ACCESS)
+PVOID NomeBackupCopiar;
+
+#define COPIAR_ARQUIVO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0080, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define RENOMEAR_ARQUIVO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0082, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define OCULTAR_PROCESSO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0084, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define DESLIGAR_COMPUTADOR CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0086, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define REINICIAR_COMPUTADOR CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0088, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
 /// <summary>
 /// Inicia o driver
 /// </summary>
@@ -44,17 +61,18 @@ PDEVICE_OBJECT DispositivoGlobal;
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath);
 
 /// <summary>
-/// Descarrega o driver
+/// Verifica se é uma pasta ou arquivo
 /// </summary>
-/// <param name="DriverObject"></param>
-VOID Unload(_In_ PDRIVER_OBJECT DriverObject);
+/// <param name="dwAttributes"></param>
+/// <returns></returns>
+BOOLEAN IsFileDirectory(unsigned long dwAttributes);
 
 /// <summary>
 /// Lista todos os arquivos dentro de uma pasta
 /// </summary>
 /// <param name="Pasta"></param>
 /// <returns></returns>
-NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar);
+NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOLEAN PrimeiraPasta);
 
 /// <summary>
 /// Deleta um arquivo
@@ -70,7 +88,7 @@ NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo);
 /// <param name="Irp"></param>
 /// <param name="Context"></param>
 /// <returns></returns>
-NTSTATUS CompletarFuncaoIRP(PDEVICE_OBJECT DeviceObject, PIRP Irp, PVOID Context);
+NTSTATUS CompletarFuncaoIRP(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Context);
 
 /// <summary>
 /// Completa um atributo a um arquivo
@@ -79,19 +97,7 @@ NTSTATUS CompletarFuncaoIRP(PDEVICE_OBJECT DeviceObject, PIRP Irp, PVOID Context
 /// <param name="Irp"></param>
 /// <param name="Context"></param>
 /// <returns></returns>
-NTSTATUS CompletarAtributo(PDEVICE_OBJECT DeviceObject, PIRP Irp, PVOID Context);
-
-/// <summary>
-/// Seta atributos em um arquivo
-/// </summary>
-/// <param name="FileObject"></param>
-/// <param name="IoStatusBlock"></param>
-/// <param name="FileInformation"></param>
-/// <param name="FileInformationLength"></param>
-/// <param name="FileInformationClass"></param>
-/// <returns></returns>
-NTSTATUS IrpSetarAtributos(PFILE_OBJECT FileObject, PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG FileInformationLength, FILE_INFORMATION_CLASS FileInformationClass
-);
+NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Contexto);
 
 /// <summary>
 /// Cria um arquivo
@@ -108,7 +114,21 @@ NTSTATUS CriarArquivo(_In_ PUNICODE_STRING Arquivo);
 /// <returns></returns>
 NTSTATUS EscreverNoArquivo(_In_ PUNICODE_STRING ArquivoParaEscrever, _In_ PUNICODE_STRING Mensagem, _In_ ACCESS_MASK Mask);
 
-#define BUFFER_SIZE 3000
+/// <summary>
+/// Copia um arquivo
+/// </summary>
+/// <param name="Arquivo"></param>
+/// <returns></returns>
+NTSTATUS CopiarArquivo(_In_ PUNICODE_STRING Arquivo, _In_ PUNICODE_STRING ArquivoParaCopiar);
+
+/// <summary>
+/// Renomeia um arquivo
+/// </summary>
+/// <param name="Arquivo"></param>
+/// <returns></returns>
+NTSTATUS RenomearArquivo(_In_ PUNICODE_STRING Arquivo);
+
+#define BUFFER_SIZE 500
 
 // Tempo
 LARGE_INTEGER Tempo;
@@ -141,6 +161,13 @@ NTSTATUS ListarProcessos();
 NTSTATUS TerminarProcesso(_In_ ULONG ProcessID);
 
 /// <summary>
+/// Oculta um processo
+/// </summary>
+/// <param name="pid"></param>
+/// <returns></returns>
+VOID OcultarProcesso(_In_ UINT32 pid);
+
+/// <summary>
 /// Obtém o caminho de um processo
 /// </summary>
 /// <param name="Process"></param>
@@ -170,3 +197,69 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp);
 /// <param name="Irp"></param>
 /// <returns></returns>
 NTSTATUS IRPFechado(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp);
+
+/*
+
+	Estrutura para desligamento
+
+*/
+typedef enum _SHUTDOWN_ACTION {
+	ShutdownNoReboot,
+	ShutdownReboot,
+	ShutdownPowerOff
+} SHUTDOWN_ACTION;
+
+NTSYSCALLAPI NTSTATUS NTAPI NtShutdownSystem(_In_ SHUTDOWN_ACTION Action);
+
+// Desliga o sistema
+VOID DesligarSistema(){NtShutdownSystem(2);}
+VOID ReiniciarSistema(){NtShutdownSystem(1);}
+
+#pragma warning(disable : 4996)
+
+/// <summary>
+/// Força o PC a desligar
+/// </summary>
+VOID DesligarOuReiniciarPC(_In_ BOOLEAN DesligarPC)
+{
+	// Novo work
+	PWORK_QUEUE_ITEM ItemTrabalho = (PWORK_QUEUE_ITEM)ExAllocatePool(NonPagedPool, sizeof(WORK_QUEUE_ITEM));
+
+	// Se conseguir alocar
+	if (ItemTrabalho != NULL)
+	{
+		// Se for para desligar
+		if (DesligarPC == TRUE)
+		{
+			// Inicie
+			ExInitializeWorkItem(ItemTrabalho, &DesligarSistema, NULL);
+		}
+		else {
+			// Inicie
+			ExInitializeWorkItem(ItemTrabalho, &ReiniciarSistema, NULL);
+		}
+
+		// Inicie
+		ExQueueWorkItem(ItemTrabalho, DelayedWorkQueue);
+	}
+}
+
+/// <summary>
+/// Requisição criada
+/// </summary>
+/// <param name="Data"></param>
+/// <param name="Objects"></param>
+/// <param name="Context"></param>
+/// <returns></returns>
+FLT_PREOP_CALLBACK_STATUS IrpMjCriado(
+	_Inout_ PFLT_CALLBACK_DATA  Data,
+	_In_ PCFLT_RELATED_OBJECTS Objetos,
+	_In_ PVOID* Contexto
+);
+
+/// <summary>
+/// Função que descarrega o filtro
+/// </summary>
+NTSTATUS DescarregarDriver(
+	_In_ FLT_FILTER_UNLOAD_FLAGS Descarregar
+);

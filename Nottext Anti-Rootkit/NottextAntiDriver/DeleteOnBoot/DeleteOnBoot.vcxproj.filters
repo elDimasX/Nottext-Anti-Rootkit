@@ -46,5 +46,14 @@
     <ClInclude Include="process.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hideprocess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="minifilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rootkitOperations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

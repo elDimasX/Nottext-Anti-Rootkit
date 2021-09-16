@@ -40,10 +40,10 @@ namespace GUI
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.Location = new System.Drawing.Point(16, 12);
+            this.label1.Location = new System.Drawing.Point(14, 9);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(256, 55);
+            this.label1.Size = new System.Drawing.Size(224, 43);
             this.label1.TabIndex = 0;
             this.label1.Text = "label1";
             // 
@@ -51,19 +51,19 @@ namespace GUI
             // 
             this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(16, 71);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
+            this.textBox1.Location = new System.Drawing.Point(14, 55);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(255, 25);
+            this.textBox1.Size = new System.Drawing.Size(224, 22);
             this.textBox1.TabIndex = 1;
             // 
             // OK
             // 
             this.OK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.OK.Location = new System.Drawing.Point(16, 107);
-            this.OK.Margin = new System.Windows.Forms.Padding(4);
+            this.OK.Location = new System.Drawing.Point(14, 83);
+            this.OK.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.OK.Name = "OK";
-            this.OK.Size = new System.Drawing.Size(100, 32);
+            this.OK.Size = new System.Drawing.Size(88, 25);
             this.OK.TabIndex = 2;
             this.OK.Text = "OK";
             this.OK.UseVisualStyleBackColor = true;
@@ -71,21 +71,21 @@ namespace GUI
             // 
             // Texto
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 18F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(283, 150);
+            this.ClientSize = new System.Drawing.Size(248, 117);
             this.Controls.Add(this.OK);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
-            this.Font = new System.Drawing.Font("Consolas", 11.25F);
+            this.Font = new System.Drawing.Font("Consolas", 9F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(303, 193);
+            this.MaximumSize = new System.Drawing.Size(268, 160);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(303, 193);
+            this.MinimumSize = new System.Drawing.Size(268, 160);
             this.Name = "Texto";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Confirmação";

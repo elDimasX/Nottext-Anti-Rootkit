@@ -10,7 +10,7 @@ Signature   = "$Windows NT$"
 Class = "ActivityMonitor"
 ClassGuid = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}
 Provider    = %ManufacturerName%
-DriverVer = 09/12/2021,21.53.18.392
+DriverVer = 09/13/2021,20.48.9.110
 CatalogFile = DeleteOnBoot.cat
 PnpLockDown=1
 

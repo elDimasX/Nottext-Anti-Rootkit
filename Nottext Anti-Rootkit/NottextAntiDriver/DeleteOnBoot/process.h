@@ -1,4 +1,4 @@
-
+Ôªø
 
 /*
 
@@ -37,14 +37,14 @@ typedef struct _SYSTEM_PROCESSES {
     SYSTEM_THREADS   Threads[1];
 } SYSTEM_PROCESSES, * PSYSTEM_PROCESSES;
 
-// Definicıes
+// Definic√µes
 #define SystemProcessInformation 5
 typedef unsigned char       BYTE;
 
 // TAG
 #define POOL_TAG 'enoN'
 
-// IncluiÁ„o
+// Inclui√ß√£o
 #include <stdlib.h>
 
 /// <summary>
@@ -56,7 +56,7 @@ NTSTATUS ListarProcessos()
     NTSTATUS Status;
     ULONG Tamanho = 0;
 
-    // Se conseguir obter a informaÁ„o da alocaÁ„o
+    // Se conseguir obter a informa√ß√£o da aloca√ß√£o
     if (ZwQuerySystemInformation(SystemProcessInformation, NULL, 0, &Tamanho) == STATUS_INFO_LENGTH_MISMATCH) {
 
         // Tamanho
@@ -67,7 +67,7 @@ NTSTATUS ListarProcessos()
 
             if (Memoria) {
 
-                // Obtenha as informaÁıes novamente
+                // Obtenha as informa√ß√µes novamente
                 Status = ZwQuerySystemInformation(SystemProcessInformation, Memoria, Tamanho, &Tamanho);
 
                 if (NT_SUCCESS(Status)) {
@@ -92,7 +92,7 @@ NTSTATUS ListarProcessos()
 
                                 sprintf(
                                     NomeProcesso,
-                                    "%ws, Threads: %u, PID: %llu\r\n",
+                                    "%ws : Threads: %u : PID: %llu\r\n",
                                     processEntry->ProcessName.Buffer,
                                     processEntry->ThreadCount,
                                     processEntry->ProcessId
@@ -125,12 +125,13 @@ NTSTATUS ListarProcessos()
 /// </summary>
 /// <param name="ProcessID"></param>
 /// <returns></returns>
-NTSTATUS TerminarProcesso(_In_ ULONG ProcessID) {
+NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
+{
 
     // Status
     NTSTATUS Status = STATUS_SUCCESS;
 
-    // AlÁa do processo
+    // Al√ßa do processo
     HANDLE AlcaProcesso;
     OBJECT_ATTRIBUTES Atributos;
 
@@ -157,7 +158,7 @@ NTSTATUS TerminarProcesso(_In_ ULONG ProcessID) {
     Status = ZwTerminateProcess(AlcaProcesso, -1);
 
 
-    // Feche a alÁa
+    // Feche a al√ßa
     ZwClose(AlcaProcesso);
 
     // Retorne
@@ -178,7 +179,7 @@ typedef NTSTATUS(*ZWSUSPENDPROCESS)
 ZWSUSPENDPROCESS ZwSuspendProcess;
 
 /// <summary>
-/// ObtÈm um local de um processo
+/// Obt√©m um local de um processo
 /// </summary>
 /// <param name="Process"></param>
 /// <returns></returns>
@@ -191,14 +192,14 @@ PUNICODE_STRING LocalProcesso(_In_ PEPROCESS Processo)
     // Onde salvaremos o nome do local do disco
     POBJECT_NAME_INFORMATION FileObjectInfo = NULL;
 
-    // Se n„o conseguir salvar as informaÁıes do processo no PFILE_OBJECT
+    // Se n√£o conseguir salvar as informa√ß√µes do processo no PFILE_OBJECT
     if (!NT_SUCCESS(PsReferenceProcessFilePointer(Processo, &FileObject)))
     {
-        // N„o retorne nada
+        // N√£o retorne nada
         return NULL;
     }
 
-    // Se n„o conseguir obter o local do driver ("C:\") do arquivo
+    // Se n√£o conseguir obter o local do driver ("C:\") do arquivo
     if (!NT_SUCCESS(IoQueryFileDosDeviceName(FileObject, &FileObjectInfo)))
     {
         // Falhou, pare

@@ -123,15 +123,6 @@
   <metadata name="menuProcessos.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>172, 17</value>
   </metadata>
-  <data name="label3.Text" xml:space="preserve">
-    <value>Nottext Anti-Rootkit
-_________________________
-
-Versão do produto: 1.0.0.0
-Email para contato: dimasperreira595@gmail.com
-Desenvolvido com as seguintes linguagens: C e C#
-GitHub: https://github.com/elDimasX/</value>
-  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

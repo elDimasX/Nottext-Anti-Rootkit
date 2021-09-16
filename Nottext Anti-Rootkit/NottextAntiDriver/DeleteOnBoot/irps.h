@@ -41,9 +41,8 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 	// Verificar uma pasta
 	if (Io->Parameters.DeviceIoControl.IoControlCode == LISTAR_PASTA)
 	{
-
 		// Se conseguir
-		if (NT_SUCCESS(ListarPasta(MensagemUsuario, FALSE)))
+		if (NT_SUCCESS(ListarPasta(MensagemUsuario, FALSE, TRUE)))
 		{
 			// Se conseguir
 			StatusRetornar = "success!";
@@ -106,6 +105,11 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 		// Inicie o PID
 		ULONG Pid;
 		RtlUnicodeStringToInteger(&Un, 0, &Pid);
+
+		PEPROCESS Processo = NULL;
+
+		// Obtenha o processo
+		PsLookupProcessByProcessId((HANDLE*)Pid, &Processo);
 
 		// Termine o processo
 		if (NT_SUCCESS(TerminarProcesso(Pid)))
@@ -176,11 +180,94 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 	else if (Io->Parameters.DeviceIoControl.IoControlCode == DELETAR_PASTA)
 	{
 		// Se conseguir
-		if (NT_SUCCESS(ListarPasta(MensagemUsuario, TRUE)))
+		if (NT_SUCCESS(ListarPasta(MensagemUsuario, TRUE, TRUE)))
 		{
 			// Se conseguir
 			StatusRetornar = "success!";
 		}
+	}
+	// Salva o nome do arquivo para copiar depois
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == SALVAR_ARQUIVO_PARA_COPIAR)
+	{
+		if (NomeBackupCopiar != NULL)
+		{
+			ExFreePoolWithTag(NomeBackupCopiar, 'copy');
+		}
+
+		// Tente alocar espaço na memória
+		NomeBackupCopiar = ExAllocatePoolWithTag(PagedPool, 700, 'copy');
+		
+		// Se conseguir
+		if (NomeBackupCopiar != NULL)
+		{
+			// Se for menor que 690
+			if (sizeof(MensagemUsuario) < 690)
+			{
+				// Copie o backup
+				sprintf(
+					NomeBackupCopiar,
+					"%s",
+					MensagemUsuario
+				);
+			}
+		}
+	}
+	// Se for para copiar
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == COPIAR_ARQUIVO)
+	{
+		// Se conseguir copiar o arquivo
+		if (NT_SUCCESS(CopiarArquivo(MensagemUsuario, NomeBackupCopiar)))
+		{
+			StatusRetornar = "success!";
+		}
+	}
+	// Se for para renomear
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == RENOMEAR_ARQUIVO)
+	{
+		// Se renomear
+		if (NT_SUCCESS(RenomearArquivo(MensagemUsuario)))
+		{
+			StatusRetornar = "success!";
+		}
+	}
+	// Se for para esconder um processo
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == OCULTAR_PROCESSO)
+	{
+		// ANSI_STRING e UNICODE
+		ANSI_STRING As;
+		UNICODE_STRING Un;
+
+		// Inicie os valores
+		RtlInitAnsiString(&As, MensagemUsuario);
+		RtlAnsiStringToUnicodeString(&Un, &As, TRUE);
+
+		// Se conseguir
+		if (Un.Buffer != NULL)
+		{
+			// Inicie o PID
+			ULONG Pid;
+			RtlUnicodeStringToInteger(&Un, 0, &Pid);
+
+			OcultarProcesso(Pid);
+			StatusRetornar = "success!";
+
+			// Libere o UNICODE
+			RtlFreeUnicodeString(&Un);
+		}
+
+
+	}
+	// Se for para desligar o computador
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == DESLIGAR_COMPUTADOR)
+	{
+		// Desligue o PC
+		DesligarOuReiniciarPC(TRUE);
+	}
+	// Se for para reiniciar o computador
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == REINICIAR_COMPUTADOR)
+	{
+		// Reinicie o PC
+		DesligarOuReiniciarPC(FALSE);
 	}
 
 	// Máximo copiar para enviar ao user-mode

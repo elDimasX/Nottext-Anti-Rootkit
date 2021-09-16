@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -137,6 +139,18 @@ namespace GUI
                 public static uint TERMINAR_PROCESSO_E_BLOQUEAR = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0074, METHOD_BUFFERED, FILE_ANY_ACCESS);
 
                 public static uint DELETAR_PASTA= CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0076, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint SALVAR_ARQUIVO_PARA_COPIAR = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0078, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint COPIAR_ARQUIVO = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0080, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint RENOMEAR_ARQUIVO = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0082, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint OCULTAR_PROCESSO = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0084, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint DESLIGAR_COMPUTADOR = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0086, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint REINICIAR_COMPUTADOR = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0088, METHOD_BUFFERED, FILE_ANY_ACCESS);
             }
 
             /// <summary>
@@ -216,36 +230,97 @@ namespace GUI
         private class Arquivos
         {
             /// <summary>
+            /// Converte bytes para uma string corretamente
+            /// </summary>
+            /// <param name="byteCount"></param>
+            /// <returns></returns>
+            static string BytesParaString(long bytesContar)
+            {
+                // Os tamanhos
+                string[] tipos = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+
+                // Se for 0
+                if (bytesContar == 0)
+                    return "0" + tipos[0];
+
+                // Converta
+                long bytes = Math.Abs(bytesContar);
+
+                // Converter para int
+                int lugar = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+
+                // Math
+                double num = Math.Round(bytes / Math.Pow(1024, lugar), 1);
+
+                // Sign
+                return (Math.Sign(bytesContar) * num).ToString() + tipos[lugar];
+            }
+
+            /// <summary>
             /// Adiciona um arquivo ou pasta na listBox
             /// </summary>
             /// <param name="arquivo"></param>
             public static void AdicionarArquivoOuPasta(string arquivo)
             {
-                // Se tiver o nome
-                if (!lt.Items.ContainsKey(arquivo.ToLower()))
+                string tipo = "";
+
+                // Se for arquivo
+                if (arquivo.Contains("Arquivo : "))
                 {
-                    string tipo = "";
-
-                    // Se for arquivo
-                    if (arquivo.Contains("Arquivo : "))
-                    {
-                        tipo = "Arquivo";
-                    }
-                    // Se for pasta
-                    else
-                    {
-                        tipo = "Pasta";
-                    }
-
-                    // Novo item
-                    ListViewItem item = new ListViewItem(arquivo.Replace("\\??\\", "").Replace("Arquivo : ", "").Replace("Pasta : ", ""));
-
-                    // Adicione o tipo
-                    item.SubItems.Add(tipo);
-
-                    // Adicione
-                    lt.Items.Add(item);
+                    tipo = "Arquivo";
                 }
+                // Se for pasta
+                else
+                {
+                    tipo = "Pasta";
+                }
+
+                // Tamanho
+                string tamanho = "";
+                string tamanhoConvertido = "";
+
+                // Se for um arquivo
+                if (tipo == "Arquivo")
+                {
+                    // Obtenha o resultado depois da palavra Tamanho: 
+                    tamanho = arquivo.Split(new[] { "Tamanho: " }, StringSplitOptions.None)[1];
+
+                    // Tamanho, coonvertido corretamente
+                    tamanhoConvertido = BytesParaString(Int32.Parse(tamanho));
+                }
+
+                // Cor
+                Color cor = Color.Black;
+
+                // Nome do arquivo original
+                string arquivoOriginal = arquivo.Replace("\\??\\", "")
+                    .Replace("Arquivo : ", "")
+                    .Replace("Pasta : ", "")
+                    .Replace(" : Tamanho: ", "");
+
+                // Novo item
+                ListViewItem item = new ListViewItem(arquivoOriginal);
+
+                // Se for maior
+                if (tamanho.Length > 0)
+                    item.Text = item.Text.Replace(tamanho, "");
+
+                 // Se não conseguimos listar
+                if (!File.Exists(lb.Text + "\\"+ item.Text))
+                {
+                    if (!Directory.Exists(lb.Text + "\\" + item.Text))
+                        cor = Color.Red;
+                }
+
+                // Cor
+                item.ForeColor = cor;
+
+                // Adicione o tipo
+                item.SubItems.Add(tipo);
+                item.SubItems.Add(tamanhoConvertido);
+
+                // Adicione
+                lt.Items.Add(item);
             }
 
             /// <summary>
@@ -267,8 +342,15 @@ namespace GUI
                     lt.Items.Clear();
                     lt.Items.Add("..");
 
-                    // Liste tudo
-                    retornar = Kernel.EnviarMensagem("\\??\\" + pasta, Kernel.CTL_CODES.LISTAR_PASTA);
+                    // Se for C:
+                    if (lb.Text.ToLower() == "c:")
+                    {
+                        retornar = Kernel.EnviarMensagem("\\??\\C:\\", Kernel.CTL_CODES.LISTAR_PASTA);
+                    } else
+                    {
+                        // Liste tudo
+                        retornar = Kernel.EnviarMensagem("\\??\\" + pasta, Kernel.CTL_CODES.LISTAR_PASTA);
+                    }
 
                     // Procure todos os arquivos
                     foreach (string arquivo in File.ReadAllLines(arquivosListados, Encoding.GetEncoding("iso-8859-1")))
@@ -322,7 +404,10 @@ namespace GUI
                     Codigo = Kernel.CTL_CODES.DELETAR_PASTA;
                 }
 
-                if (Kernel.EnviarMensagem("\\??\\" + lb.Text + "\\" + arquivo.Text, Codigo) == true)
+                // Pasta
+                string pasta = lb.Text;
+
+                if (Kernel.EnviarMensagem("\\??\\" + pasta + "\\" + arquivo.Text, Codigo) == true)
                 {
                     lt.Items.Remove(arquivo);
 
@@ -330,6 +415,44 @@ namespace GUI
                 }
 
                 return false;
+            }
+
+            /// <summary>
+            /// Copia um arquivo
+            /// </summary>
+            /// <param name="arquivo"></param>
+            /// <param name="local"></param>
+            /// <returns></returns>
+            public static bool CopiarArquivo(ListViewItem arquivo, string local)
+            {
+                bool retornar = false;
+
+                // Salve o nome do arquivo que queremos copiar
+                Kernel.EnviarMensagem("\\??\\" + lb.Text + "\\" + arquivo.Text, Kernel.CTL_CODES.SALVAR_ARQUIVO_PARA_COPIAR);
+
+                // Copie o arquivo
+                retornar = Kernel.EnviarMensagem("\\??\\" + local, Kernel.CTL_CODES.COPIAR_ARQUIVO);
+
+                return retornar;
+            }
+
+            /// <summary>
+            /// Renomeia um arquivo
+            /// </summary>
+            /// <param name="arquivo"></param>
+            /// <param name="nome"></param>
+            /// <returns></returns>
+            public static bool RenomearArquivo(ListViewItem arquivo, string nome)
+            {
+                bool retornar = false;
+
+                // Salve o nome do arquivo que queremos renomear
+                Kernel.EnviarMensagem("\\??\\" + lb.Text + "\\" + arquivo.Text, Kernel.CTL_CODES.SALVAR_ARQUIVO_PARA_COPIAR);
+
+                // Renomeie o arquivo
+                retornar = Kernel.EnviarMensagem("\\??\\" + lb.Text + "\\" + nome, Kernel.CTL_CODES.RENOMEAR_ARQUIVO);
+
+                return retornar;
             }
         }
 
@@ -364,32 +487,26 @@ namespace GUI
                     foreach (string linha in File.ReadAllLines(processosListados))
                     {
                         // PID
-                        // O texto vai parar depois desse texto:
-                        string pid = linha.Substring(linha.IndexOf("PID:"));
+                        string pid = linha.Split(new[] { "PID: " }, StringSplitOptions.None)[1];
 
-                        // remova o texto pid
-                        pid = pid.Replace("PID: ", "");
+                        // Threads
+                        string threads = linha.Split(new[] { "Threads: " }, StringSplitOptions.None)[1];
 
-                        // Threads, mas não foi substitudo
-                        string threads = linha.Substring(linha.IndexOf("Threads: "));
-                        threads = linha.Replace("Threads: ", "").Replace(", PID: ", "").Replace(pid, "");
-                        
-                        // Número de threads original
-                        string threadsOriginal = threads.Substring(threads.IndexOf(", "));
-                        threadsOriginal = threadsOriginal.Replace(", ", "");
+                        // Remova o nome threads e PID
+                        threads = threads.Replace("Threads: ", "").Replace(" : PID: " + pid, "");
 
                         // Processo
                         string processo = linha;
 
                         // Remover depois disso
-                        int index = processo.LastIndexOf(", Threads: ");
+                        int index = processo.LastIndexOf(": Threads: ");
 
                         // Remova-o
                         processo = processo.Substring(0, index);
 
                         // Nome
                         ListViewItem item = new ListViewItem(processo);
-                        item.SubItems.Add(threadsOriginal);
+                        item.SubItems.Add(threads);
                         item.SubItems.Add(pid);
 
                         lt2.Items.Add(item);
@@ -510,6 +627,7 @@ namespace GUI
                     {
                         try
                         {
+                            // Delete o arquivo
                             if (Arquivos.DeletarArquivo(item) == false)
                             {
                                 // Mostre a mensagem
@@ -533,7 +651,7 @@ namespace GUI
             try
             {
                 string nome = "";
-                Texto texto = new Texto("Digite o nome do arquivo: ", nome);
+                Texto texto = new Texto("Digite o nome do arquivo: ", nome, "");
                 texto.ShowDialog();
 
                 // Nova string
@@ -587,7 +705,7 @@ namespace GUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void finalizarProcessoToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void finalizarProcessoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -602,7 +720,10 @@ namespace GUI
 
                 if (Processos.TerminarProcesso(item))
                 {
+                    UseWaitCursor = true;
+                    await Task.Delay(250);
                     Processos.ListarProcessos();
+                    UseWaitCursor = false;
                 }
                 else
                 {
@@ -616,7 +737,7 @@ namespace GUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void finalizarBloquearToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void finalizarBloquearToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -629,9 +750,14 @@ namespace GUI
                     return;
                 }
 
+                // Bloqueie
                 if (Processos.TerminarProcessoEBloquear(item))
                 {
+                    UseWaitCursor = true;
+                    await Task.Delay(250);
                     Processos.ListarProcessos();
+                    UseWaitCursor = false;
+
                 }
                 else
                 {
@@ -645,8 +771,18 @@ namespace GUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Delete o serviço
+            Process pp = new Process();
+            pp.StartInfo.FileName = "sc.exe";
+            pp.StartInfo.Arguments = "delete " + '"' + "Nottext Anti-Rootkit Driver" + '"';
+            pp.StartInfo.UseShellExecute = false;
+            pp.StartInfo.CreateNoWindow = true;
+            pp.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            pp.Start();
+            pp.WaitForExit();
+
             try
             {
                 // Delete a pasta
@@ -669,10 +805,6 @@ namespace GUI
                     sv.Stop();
                 } catch (Exception) { }
 
-                // Delete o serviço
-                await Program.IniciarProcesso("sc.exe", "delete " + '"' + "Nottext Anti-Rootkit Driver" + '"');
-
-
                 try
                 {
                     File.Delete("C:\\Windows\\System32\\Drivers\\NottextAntiDriver.sys");
@@ -683,5 +815,221 @@ namespace GUI
             catch (Exception) { }
         }
 
+        /// <summary>
+        /// Copia um arquivo
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void copiarArquivoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Lista
+            List<ListViewItem> items = new List<ListViewItem>();
+
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                // Adicione
+                items.Add(item);
+            }
+
+            // Procure
+            foreach (ListViewItem item in items)
+            {
+                try
+                {
+                    string local = "";
+
+                    Texto txt = new Texto("Digite o local do arquivo para copiar: " + item.Text, local, label1.Text + "\\" + item.Text);
+
+                    txt.ShowDialog();
+
+                    // Obtenha o texto
+                    local = txt.RetornarTexto();
+
+                    // Se não for vázio
+                    if (local != "")
+                    {
+                        // Delete o arquivo
+                        if (Arquivos.CopiarArquivo(item, local) == false)
+                        {
+                            // Mostre a mensagem
+                            Mensagem("Não foi possível copiar", true);
+                        }
+                    }
+                } catch (Exception) { }
+            }
+
+            items.Clear();
+            Arquivos.ListaPasta(label1.Text);
+        }
+
+        /// <summary>
+        /// Quando clicar no item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void listView1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                try
+                {
+                    // item
+                    ListViewItem itemFocado = listView1.FocusedItem;
+
+                    // Se conter
+                    if (itemFocado.SubItems[1].Text == "Pasta")
+                    {
+                        copiarArquivoToolStripMenuItem.Visible = false;
+                    }
+                    else
+                    {
+                        copiarArquivoToolStripMenuItem.Visible = true;
+                    }
+                } catch (Exception) { }
+            }
+        }
+
+        /// <summary>
+        /// Quando clicar em renomear
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void renomearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Lista
+            List<ListViewItem> items = new List<ListViewItem>();
+
+            foreach (ListViewItem item in listView1.SelectedItems)
+            {
+                // Adicione
+                items.Add(item);
+            }
+
+            // Procure
+            foreach (ListViewItem item in items)
+            {
+                try
+                {
+                    // Novo nome
+                    string novoNome = "";
+
+                    Texto txt = new Texto("Digite o novo nome do arquivo: " + item.Text, novoNome, item.Text);
+
+                    txt.ShowDialog();
+
+                    // Obtenha o texto
+                    novoNome = txt.RetornarTexto();
+
+                    // Se não for vázio
+                    if (novoNome != "")
+                    {
+                        // Delete o arquivo
+                        if (Arquivos.RenomearArquivo(item, novoNome) == false)
+                        {
+                            // Mostre a mensagem
+                            Mensagem("Não foi possível renomear", true);
+                        }
+                    }
+                }
+                catch (Exception) { }
+            }
+
+            items.Clear();
+            Arquivos.ListaPasta(label1.Text);
+        }
+
+        /// <summary>
+        /// Quando ocultar um processo
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void ocultarProcessoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Obtenha somente o PID
+                ListViewItem item = listView2.SelectedItems[0];
+
+                if (Mensagem("Deseja mesmo ocultar o processo? ele será removido desta lista", false) == false)
+                {
+                    return;
+                }
+
+                // Oculte o processo
+                Kernel.EnviarMensagem(item.SubItems[2].Text, Kernel.CTL_CODES.OCULTAR_PROCESSO);
+
+                UseWaitCursor = true;
+                await Task.Delay(250);
+                Processos.ListarProcessos();
+                UseWaitCursor = false;
+            } catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Quando clicar em desligar
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void desligar_Click(object sender, EventArgs e)
+        {
+            // Se confirmar
+            if (Mensagem("Tem certeza? seu computador será desligado agora", false) == true)
+            {
+                Kernel.EnviarMensagem("", Kernel.CTL_CODES.DESLIGAR_COMPUTADOR);
+                Close();
+            }
+        }
+
+        /// <summary>
+        /// Reinicia o computador
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void reiniciar_Click(object sender, EventArgs e)
+        {
+            // Se confirmar
+            if (Mensagem("Tem certeza? seu computador será reiniciado agora", false) == true)
+            {
+                Kernel.EnviarMensagem("", Kernel.CTL_CODES.REINICIAR_COMPUTADOR);
+                Close();
+            }
+        }
+
+        /// <summary>
+        /// Link
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("https://github.com/elDimasX/Nottext-Anti-Rootkit");
+        }
+
+        /// <summary>
+        /// Vai para uma pasta localizada
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void irParaUmaPastaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string local = "";
+
+                Texto txt = new Texto("Digite o local que deseja ir (cuidado): ", local, "");
+                txt.ShowDialog();
+                local = txt.RetornarTexto();
+
+                if (!String.IsNullOrEmpty(local))
+                {
+                    // Altere a label
+                    label1.Text = local;
+
+                    // Liste
+                    Arquivos.ListaPasta(local);
+                }
+            } catch (Exception) { }
+        }
     }
 }
+

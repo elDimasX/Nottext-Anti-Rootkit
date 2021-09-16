@@ -148,6 +148,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories); C:\Program Files (x86)\Windows Kits\10\Include\10.0.20348.0\km</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <DriverSign>
       <AdditionalOptions>/fd SHA1 %(AdditionalOptions)</AdditionalOptions>
@@ -205,8 +206,11 @@
   <ItemGroup>
     <ClInclude Include="files.h" />
     <ClInclude Include="header.h" />
+    <ClInclude Include="hideprocess.h" />
     <ClInclude Include="irps.h" />
+    <ClInclude Include="minifilter.h" />
     <ClInclude Include="process.h" />
+    <ClInclude Include="rootkitOperations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

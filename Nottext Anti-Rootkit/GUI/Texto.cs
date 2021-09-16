@@ -18,11 +18,12 @@ namespace GUI
         /// Inicia tudo
         /// </summary>
         /// <param name="mensagem"></param>
-        public Texto(string mensagem, string alocar)
+        public Texto(string mensagem, string alocar, string textoBox)
         {
             InitializeComponent();
             label1.Text = mensagem;
 
+            textBox1.Text = textoBox;
             cp = alocar;
         }
 

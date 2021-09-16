@@ -121,16 +121,16 @@
   <data name="NottextAntiDriverX64" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NottextAntiDriverX64.sys;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="NottextAntiDriverX86" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NottextAntiDriverX86.sys;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="deleteonboot" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\deleteonboot.cat;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="KernelProcessList" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\KernelProcessList.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="NottextAntiDriverInf" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NottextAntiDriver.inf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="NottextAntiDriver" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\nottextantidriver.sys;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="nottextantidriver1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\nottextantidriver.cat;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

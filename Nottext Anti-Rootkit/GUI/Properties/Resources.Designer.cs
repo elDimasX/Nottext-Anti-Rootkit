@@ -63,9 +63,9 @@ namespace GUI.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Byte[].
         /// </summary>
-        internal static byte[] deleteonboot {
+        internal static byte[] KernelProcessList {
             get {
-                object obj = ResourceManager.GetObject("deleteonboot", resourceCulture);
+                object obj = ResourceManager.GetObject("KernelProcessList", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -73,9 +73,19 @@ namespace GUI.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Byte[].
         /// </summary>
-        internal static byte[] KernelProcessList {
+        internal static byte[] NottextAntiDriver {
             get {
-                object obj = ResourceManager.GetObject("KernelProcessList", resourceCulture);
+                object obj = ResourceManager.GetObject("NottextAntiDriver", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
+        internal static byte[] nottextantidriver1 {
+            get {
+                object obj = ResourceManager.GetObject("nottextantidriver1", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -96,16 +106,6 @@ namespace GUI.Properties {
         internal static byte[] NottextAntiDriverX64 {
             get {
                 object obj = ResourceManager.GetObject("NottextAntiDriverX64", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Byte[].
-        /// </summary>
-        internal static byte[] NottextAntiDriverX86 {
-            get {
-                object obj = ResourceManager.GetObject("NottextAntiDriverX86", resourceCulture);
                 return ((byte[])(obj));
             }
         }
