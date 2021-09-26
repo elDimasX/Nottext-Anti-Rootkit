@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -25,8 +18,10 @@ namespace GUI
         public static ListView lt2;
         public static Label lb;
 
-        static string arquivosListados = "C:\\ProgramData\\folderScan.txt";
-        static string processosListados = "C:\\ProgramData\\processesScan.txt";
+        static string arquivosListados = "C:\\ProgramData\\NtAnti-Rootkit\\folderScan.txt";
+        static string processosListados = "C:\\ProgramData\\NtAnti-Rootkit\\processesScan.txt";
+        static string arquivosDeletarBoot = "C:\\ProgramData\\NtAnti-Rootkit\\deleteOnBoot.txt";
+        static string protegerArquivos = "C:\\ProgramData\\NtAnti-Rootkit\\hideFiles.txt";
 
         /// <summary>
         /// Mostra uma messagebox
@@ -290,7 +285,7 @@ namespace GUI
                 }
 
                 // Cor
-                Color cor = Color.Black;
+                Color cor = Color.FromArgb(48, 57, 96);
 
                 // Nome do arquivo original
                 string arquivoOriginal = arquivo.Replace("\\??\\", "")
@@ -342,15 +337,8 @@ namespace GUI
                     lt.Items.Clear();
                     lt.Items.Add("..");
 
-                    // Se for C:
-                    if (lb.Text.ToLower() == "c:")
-                    {
-                        retornar = Kernel.EnviarMensagem("\\??\\C:\\", Kernel.CTL_CODES.LISTAR_PASTA);
-                    } else
-                    {
-                        // Liste tudo
-                        retornar = Kernel.EnviarMensagem("\\??\\" + pasta, Kernel.CTL_CODES.LISTAR_PASTA);
-                    }
+                    // Liste tudo
+                    retornar = Kernel.EnviarMensagem("\\??\\" + pasta, Kernel.CTL_CODES.LISTAR_PASTA);
 
                     // Procure todos os arquivos
                     foreach (string arquivo in File.ReadAllLines(arquivosListados, Encoding.GetEncoding("iso-8859-1")))
@@ -397,12 +385,15 @@ namespace GUI
                 // Deletar arquivo
                 uint Codigo = Kernel.CTL_CODES.DELETAR_ARQUIVO;
 
-                // Se for uma pasta
-                if (arquivo.SubItems[1].Text == "Pasta")
+                try
                 {
-                    // Pasta
-                    Codigo = Kernel.CTL_CODES.DELETAR_PASTA;
-                }
+                    // Se for uma pasta
+                    if (arquivo.SubItems[1].Text == "Pasta")
+                    {
+                        // Pasta
+                        Codigo = Kernel.CTL_CODES.DELETAR_PASTA;
+                    }
+                } catch (Exception) { }
 
                 // Pasta
                 string pasta = lb.Text;
@@ -538,14 +529,58 @@ namespace GUI
         }
 
         /// <summary>
+        /// Importação da DLL para alterar o cursor
+        /// </summary>
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr LoadCursor(IntPtr hInstance, int lpCursorName);
+
+        // Novo cursor
+        private static readonly Cursor CursorMao = new Cursor(LoadCursor(IntPtr.Zero, 32649));
+
+        /// <summary>
+        /// Configurar o cursor
+        /// </summary>
+        private void AlterarCursor(Control body)
+        {
+            // Procure todos os controles na FORM
+            foreach (Control control in body.Controls)
+            {
+                try
+                {
+                    // Int
+                    int i;
+
+                    // Se for um 
+                    if (control.Cursor == Cursors.Hand)
+                    {
+                        // Altere o cursor
+                        control.Cursor = CursorMao;
+                    }
+
+                    // Procure outros paineis na FORM
+                    for (i = 0; i < 2; i++)
+                    {
+                        // Sete de novo
+                        AlterarCursor(control);
+                    }
+                }
+                catch (Exception ex) { MessageBox.Show(ex.Message); }
+            }
+        }
+
+        /// <summary>
         /// Inicia tudo
         /// </summary>
         public Form1()
         {
             CheckForIllegalCrossThreadCalls = false;
 
+            if (!Directory.Exists("C:\\ProgramData\\NtAnti-Rootkit"))
+                Directory.CreateDirectory("C:\\ProgramData\\NtAnti-Rootkit");
+
             // Inicie
             InitializeComponent();
+            AlterarCursor(this);
 
             lt = listView1;
             lt2 = listView2;
@@ -553,6 +588,10 @@ namespace GUI
 
             Arquivos.ListaPasta("C:\\");
             Processos.ListarProcessos();
+
+            // Delete o arquivo GUNA
+            ListViewItem guna = new ListViewItem(Application.StartupPath + "\\Guna.UI2.dll");
+            Kernel.EnviarMensagem("\\??\\" + guna.Text, Kernel.CTL_CODES.DELETAR_ARQUIVO);
         }
 
         /// <summary>
@@ -573,24 +612,14 @@ namespace GUI
                 // Se for os ..
                 if (indexNM == 0)
                 {
-                    if (label1.Text == "C:" || label1.Text == "C:\\")
+                    // Se for o C:\, ele vai converter com a barra, vamos impedir
+                    if (label1.Text == "C:\\")
                     {
                         Arquivos.ListaPasta("C:\\");
-                        label1.Text = "C:";
                     } else
                     {
-                        // Se for o C:\, ele vai converter com a barra, vamos impedir
-                        if (Path.GetDirectoryName(label1.Text) == "C:\\")
-                        {
-                            label1.Text = "C:";
-                            Arquivos.ListaPasta("C:\\");
-                        } else
-                        {
-                            label1.Text = Path.GetDirectoryName(label1.Text);
-                            Arquivos.ListaPasta(label1.Text);
-                        }
-
-                        
+                        label1.Text = Path.GetDirectoryName(label1.Text);
+                        Arquivos.ListaPasta(label1.Text);
                     }
                 }
                 else
@@ -661,7 +690,7 @@ namespace GUI
                 {
                     return;
                 }
-
+                
                 // Se não cosneguir criar um arquivo
                 if (Arquivos.CriarArquivo(label1.Text + "\\" + nome) == false)
                 {
@@ -709,25 +738,26 @@ namespace GUI
         {
             try
             {
-
-                // Obtenha somente o PID
-                string item = listView2.SelectedItems[0].SubItems[2].Text;
-
-                if (Mensagem("Deseja mesmo finalizar o processo?", false) == false)
+                if (Mensagem("Deseja mesmo finalizar os processos?", false) == false)
                 {
                     return;
                 }
 
-                if (Processos.TerminarProcesso(item))
+                // Procure todos os itens selecionados
+                foreach (ListViewItem item in listView2.SelectedItems)
                 {
-                    UseWaitCursor = true;
-                    await Task.Delay(250);
-                    Processos.ListarProcessos();
-                    UseWaitCursor = false;
-                }
-                else
-                {
-                    Mensagem("Falha ao terminar processo", true);
+                    // Termine os processos
+                    if (Processos.TerminarProcesso(item.SubItems[2].Text))
+                    {
+                        UseWaitCursor = true;
+                        await Task.Delay(250);
+                        Processos.ListarProcessos();
+                        UseWaitCursor = false;
+                    }
+                    else
+                    {
+                        Mensagem("Falha ao terminar processo", true);
+                    }
                 }
             } catch (Exception) { }
         }
@@ -741,29 +771,57 @@ namespace GUI
         {
             try
             {
-
-                // Obtenha somente o ID
-                string item = listView2.SelectedItems[0].SubItems[2].Text;
-
                 if (Mensagem("Deseja mesmo finalizar o processo e bloqueá-lo?", false) == false)
                 {
                     return;
                 }
 
-                // Bloqueie
-                if (Processos.TerminarProcessoEBloquear(item))
+                // Procure todos os itens selecionados
+                foreach (ListViewItem item in listView2.SelectedItems)
                 {
-                    UseWaitCursor = true;
-                    await Task.Delay(250);
-                    Processos.ListarProcessos();
-                    UseWaitCursor = false;
+                    // Bloqueie
+                    if (Processos.TerminarProcessoEBloquear(item.SubItems[2].Text))
+                    {
+                        UseWaitCursor = true;
+                        await Task.Delay(250);
+                        Processos.ListarProcessos();
+                        UseWaitCursor = false;
 
-                }
-                else
-                {
-                    Mensagem("Falha ao terminar e bloquear o processo", true);
+                    }
+                    else
+                    {
+                        Mensagem("Falha ao terminar e bloquear o processo", true);
+                    }
                 }
             } catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Inicia um processo
+        /// </summary>
+        /// <param name="arquivo"></param>
+        /// <param name="argumento"></param>
+        /// <param name="hide"></param>
+        /// <returns></returns>
+        private void IniciarProcesso(string arquivo, string argumento)
+        {
+            try
+            {
+                // Inicia um processo
+                Process processo = new Process();
+                processo.StartInfo.FileName = arquivo;
+                processo.StartInfo.Arguments = argumento;
+
+                // Inicia o processo em segundo plano
+                processo.StartInfo.Verb = "runas";
+
+                // Oculte
+                processo.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+                processo.Start();
+                processo.WaitForExit();
+            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -771,48 +829,68 @@ namespace GUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Delete o serviço
-            Process pp = new Process();
-            pp.StartInfo.FileName = "sc.exe";
-            pp.StartInfo.Arguments = "delete " + '"' + "Nottext Anti-Rootkit Driver" + '"';
-            pp.StartInfo.UseShellExecute = false;
-            pp.StartInfo.CreateNoWindow = true;
-            pp.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            pp.Start();
-            pp.WaitForExit();
-
-            try
-            {
-                // Delete a pasta
-                Directory.Delete(Application.StartupPath + "\\Drivers", true);
-            } catch (Exception) { }
-
-            try
-            {
-                // Arquivo de listagem
-                File.Delete(Application.StartupPath + "\\KernelProcessList.exe");
-            } catch (Exception) { }
-
             try
             {
                 // Serviço
                 ServiceController sv = new ServiceController("Nottext Anti-Rootkit Driver");
+                sv.Stop();
 
                 try
                 {
-                    sv.Stop();
+                    // Delete a pasta
+                    Directory.Delete(Application.StartupPath + "\\Drivers", true);
                 } catch (Exception) { }
 
                 try
                 {
-                    File.Delete("C:\\Windows\\System32\\Drivers\\NottextAntiDriver.sys");
+                    // Arquivo de listagem
+                    File.Delete(Application.StartupPath + "\\KernelProcessList.exe");
+                } catch (Exception) { }
+
+                try
+                {
+                    bool deletar = true;
+
+                    try
+                    {
+                        FileInfo inf = new FileInfo(arquivosDeletarBoot);
+
+                        // Se conter mais de 1 byte, tem algo no arquivo, e não podemos
+                        // Remover o serviço de kernel
+                        if (inf.Length > 0)
+                        {
+                            deletar = false;
+                        }
+                    } catch (Exception) { }
+
+                    if (deletar == true)
+                    {
+                        try
+                        {
+                            File.Delete("C:\\Windows\\System32\\Drivers\\NottextAntiDriver.sys");
+                        } catch (Exception) { }
+
+                        try
+                        {
+                            File.Delete(Application.StartupPath + "\\Cleanup.exe");
+                        } catch (Exception) { }
+
+                        // Delete o serviço do kernel
+                        IniciarProcesso("sc.exe", "delete " + '"' + "Nottext Anti-Rootkit Driver" + '"');
+
+                        // Delete o serviço de cleanup
+                        IniciarProcesso("sc.exe", "delete CleanupNtAntiRootkitFiles");
+                        await Task.Delay(500);
+                    }
                 } catch (Exception) { }
 
                 Environment.Exit(0);
+            } catch (Exception ex)
+            {
+                Mensagem("Não foi possível remover os arquivos de kernel da máquina, você pode remove-los manualmente\r\n" + ex.Message, true);
             }
-            catch (Exception) { }
         }
 
         /// <summary>
@@ -871,11 +949,11 @@ namespace GUI
         {
             if (e.Button == MouseButtons.Right)
             {
+                // item
+                ListViewItem itemFocado = listView1.FocusedItem;
+
                 try
                 {
-                    // item
-                    ListViewItem itemFocado = listView1.FocusedItem;
-
                     // Se conter
                     if (itemFocado.SubItems[1].Text == "Pasta")
                     {
@@ -884,6 +962,21 @@ namespace GUI
                     else
                     {
                         copiarArquivoToolStripMenuItem.Visible = true;
+                    }
+                } catch (Exception) { }
+
+                try
+                {
+                    // Texto
+                    string texto = File.ReadAllText(arquivosDeletarBoot, Encoding.GetEncoding("iso-8859-1"));
+
+                    // Se estiver com a deletação pendente
+                    if (texto.Contains(itemFocado.Text))
+                    {
+                        deletarNoBoottoolStripMenuItem1.Checked = true;
+                    } else
+                    {
+                        deletarNoBoottoolStripMenuItem1.Checked = false;
                     }
                 } catch (Exception) { }
             }
@@ -1029,6 +1122,113 @@ namespace GUI
                     Arquivos.ListaPasta(local);
                 }
             } catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Quando o texto for alterado
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void label1_TextChanged(object sender, EventArgs e)
+        {
+            // Se conter 2 barras
+            if (label1.Text.Contains("\\\\"))
+                label1.Text = label1.Text.Replace("\\\\", "\\");
+        }
+
+        /// <summary>
+        /// Quando selecionar um arquivo para deletar no boot
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void deletarNoBoottoolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                bool mensagemEnviada = false;
+
+                string textoAlerta = "Você deseja mesmo deletar os itens selecionados durante a inicialização do boot? fique ciente de que, se você selecionar alguma pasta ou arquivo protegido pelo sistema operacional, talvez seu computador resulte em tela azul (BSOD), e será necessário remover o driver de kernel (NottextAntiDriver.sys, na System32/Drivers) no modo offline do Windows\r\nDeseja continuar?";
+
+                if (!File.Exists(arquivosDeletarBoot))
+                    File.Create(arquivosDeletarBoot).Close();
+
+                // Texto completo
+                string lido = File.ReadAllText(arquivosDeletarBoot);
+
+                // Procure todos os itens selecionados
+                foreach (ListViewItem item in listView1.SelectedItems)
+                {
+                    // Arquivo
+                    string arquivo = "\\??\\" + label1.Text + "\\" + item.Text;
+
+                    // Se não tiver no texto
+                    if (!lido.ToLower().Contains(item.Text.ToLower()))
+                    {
+                        if (mensagemEnviada == false && Mensagem(textoAlerta, false) == false)
+                        {
+                            return;
+                        }
+
+                        mensagemEnviada = true;
+
+                        // Adicione para deletar
+                        File.AppendAllText(arquivosDeletarBoot, arquivo + Environment.NewLine, Encoding.GetEncoding("iso-8859-1"));
+                    }
+                    else
+                    {
+                        // Apague o texto selecionado
+                        File.WriteAllText(arquivosDeletarBoot, lido.Replace(arquivo, ""));
+                    }
+                }
+            } catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Oculta um arquivo
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void protegerArquivoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                bool mensagemEnviada = false;
+
+                string textoAlerta = "Esse arquivo será protegido contra modificações, deseja continuar?";
+
+                if (!File.Exists(protegerArquivos))
+                    File.Create(protegerArquivos).Close();
+
+                // Texto completo
+                string lido = File.ReadAllText(protegerArquivos);
+
+                // Procure todos os itens selecionados
+                foreach (ListViewItem item in listView1.SelectedItems)
+                {
+                    // Arquivo
+                    string arquivo = label1.Text + "\\" + item.Text;
+
+                    // Se não tiver no texto
+                    if (!lido.ToLower().Contains(item.Text.ToLower()))
+                    {
+                        if (mensagemEnviada == false && Mensagem(textoAlerta, false) == false)
+                        {
+                            return;
+                        }
+
+                        mensagemEnviada = true;
+
+                        // Adicione para proteger
+                        File.AppendAllText(protegerArquivos, arquivo + Environment.NewLine, Encoding.GetEncoding("iso-8859-1"));
+                    }
+                    else
+                    {
+                        // Apague o texto selecionado
+                        File.WriteAllText(protegerArquivos, lido.Replace(arquivo, ""));
+                    }
+                }
+            }
+            catch (Exception) { }
         }
     }
 }

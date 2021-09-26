@@ -39,8 +39,13 @@
   <PropertyGroup />
   <PropertyGroup />
   <ItemGroup>
+    <Reference Include="Guna.UI2">
+      <HintPath>..\..\..\..\$Dlls\Guna.UI-Framework-Lib-master\GunaV2\Guna.UI2 WinForms\.net 4.0\Guna.UI2.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -100,9 +105,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\Guna.UI2.dll" />
     <Content Include="DragoNottext.ico" />
     <Content Include="golderDragon.ico" />
     <Content Include="ResourceEncrypt.ico" />
+    <None Include="Resources\dd6056e2ce4ed76a21424e90eb9a46cc_1024x1024.png" />
+    <None Include="Resources\pattern-gray-lines.jpg" />
+    <None Include="Resources\CleanupFiles.exe" />
     <None Include="Resources\KernelProcessList.exe" />
     <None Include="Resources\NottextAntiDriver.inf" />
   </ItemGroup>
