@@ -487,7 +487,7 @@ namespace GUI
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(793, 166);
             this.label4.TabIndex = 1;
-            this.label4.Text = "Nottext Anti-Rootkit \r\n________________________\r\n\r\nVersão do aplicativo: 1.0.0.1\r" +
+            this.label4.Text = "Nottext Anti-Rootkit \r\n________________________\r\n\r\nVersão do aplicativo: 1.0.0.3\r" +
     "\nDesenvolvido em: C# e C\r\nGitHub: ";
             // 
             // label3
@@ -511,7 +511,7 @@ namespace GUI
             this.titulo.Name = "titulo";
             this.titulo.Size = new System.Drawing.Size(250, 22);
             this.titulo.TabIndex = 3;
-            this.titulo.Text = "Nottext Anti-Rootkit 1.2";
+            this.titulo.Text = "Nottext Anti-Rootkit 1.3";
             // 
             // arrastar2
             // 

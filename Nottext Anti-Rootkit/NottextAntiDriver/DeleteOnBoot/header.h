@@ -2,7 +2,6 @@
 
 #include <fltKernel.h>
 #include <ntstrsafe.h>
-#include "rootkitOperations.h"
 
 // Desativa os alertas de variaveis não iniciadas
 #pragma warning (disable: 4703)
@@ -11,9 +10,9 @@
 NTSTATUS NTAPI ZwQuerySystemInformation(ULONG SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
 
 // LOG de pastas para escanear
-#define ARQUIVOS_LOG L"\\??\\C:\\ProgramData\\folderScan.txt"
-#define PROCESSOS_LOG L"\\??\\C:\\ProgramData\\processesScan.txt"
-PVOID ARQUIVO_LIDO = "\\??\\C:\\ProgramData\\fileReaded.txt";
+#define ARQUIVOS_LOG L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\folderScan.txt"
+#define PROCESSOS_LOG L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\processesScan.txt"
+#define ARQUIVO_DELETAR_BOOT L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\deleteOnBoot.txt"
 
 // Nome do dispositivo
 UNICODE_STRING DispositivoNome = RTL_CONSTANT_STRING(L"\\Device\\NtAntiRtDriver"), SysNome = RTL_CONSTANT_STRING(L"\\??\\NtAntiRtDriver");
@@ -55,10 +54,10 @@ PVOID NomeBackupCopiar;
 /// <summary>
 /// Inicia o driver
 /// </summary>
-/// <param name="DriverObject"></param>
-/// <param name="RegistryPath"></param>
+/// <param name="ObjetoDriver"></param>
+/// <param name="RegistroLocal"></param>
 /// <returns></returns>
-NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath);
+NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT ObjetoDriver, _In_ PUNICODE_STRING RegistroLocal);
 
 /// <summary>
 /// Verifica se é uma pasta ou arquivo
@@ -79,16 +78,7 @@ NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOL
 /// </summary>
 /// <param name="Arquivo"></param>
 /// <returns></returns>
-NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo);
-
-/// <summary>
-/// Completa uma função IRP
-/// </summary>
-/// <param name="DeviceObject"></param>
-/// <param name="Irp"></param>
-/// <param name="Context"></param>
-/// <returns></returns>
-NTSTATUS CompletarFuncaoIRP(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Context);
+NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo, BOOLEAN ePasta);
 
 /// <summary>
 /// Completa um atributo a um arquivo
@@ -97,7 +87,7 @@ NTSTATUS CompletarFuncaoIRP(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp
 /// <param name="Irp"></param>
 /// <param name="Context"></param>
 /// <returns></returns>
-NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Contexto);
+NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Contexto OPTIONAL);
 
 /// <summary>
 /// Cria um arquivo
@@ -263,3 +253,21 @@ FLT_PREOP_CALLBACK_STATUS IrpMjCriado(
 NTSTATUS DescarregarDriver(
 	_In_ FLT_FILTER_UNLOAD_FLAGS Descarregar
 );
+
+/// <summary>
+/// Abre um arquivo com IRP
+/// </summary>
+/// <param name="Arquivo"></param>
+/// <param name="Acesso"></param>
+/// <param name="Io"></param>
+/// <param name="ObjetoArquivo"></param>
+/// <returns></returns>
+NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _In_ PIO_STATUS_BLOCK Io, _Out_ PFILE_OBJECT* ObjetoArquivo);
+
+/// <summary>
+/// Deleta um arquivo por FILE_OBJECT
+/// </summary>
+/// <param name="ObjetoArquivo"></param>
+/// <param name="ePasta"></param>
+/// <returns></returns>
+NTSTATUS DeletarObjetoArquivo(_Out_ PFILE_OBJECT ObjetoArquivo, _In_ BOOLEAN ePasta);

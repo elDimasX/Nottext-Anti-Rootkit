@@ -47,6 +47,13 @@ typedef unsigned char       BYTE;
 // Incluição
 #include <stdlib.h>
 
+
+typedef NTSTATUS(*ZWSUSPENDPROCESS)
+(
+    IN ULONG ProcessHandle  // Alça para o processo
+    );
+ZWSUSPENDPROCESS ZwSuspendProcess;
+
 /// <summary>
 /// Lista todos os processos
 /// </summary>
@@ -72,15 +79,15 @@ NTSTATUS ListarProcessos()
 
                 if (NT_SUCCESS(Status)) {
 
-                    PSYSTEM_PROCESSES processEntry = Memoria;
+                    PSYSTEM_PROCESSES entradaProcesso = Memoria;
 
                     do {
 
                         // Nome
-                        if (processEntry->ProcessName.Length) {
+                        if (entradaProcesso->ProcessName.Length) {
 
-                            // Stirng
-                            PCHAR NomeProcesso = ExAllocatePoolWithTag(PagedPool, 200, 'KIKE');
+                            // String
+                            PCHAR NomeProcesso = ExAllocatePoolWithTag(PagedPool, 300, 'KIKE');
 
                             // Se conseguir
                             if (NomeProcesso)
@@ -93,9 +100,9 @@ NTSTATUS ListarProcessos()
                                 sprintf(
                                     NomeProcesso,
                                     "%ws : Threads: %u : PID: %llu\r\n",
-                                    processEntry->ProcessName.Buffer,
-                                    processEntry->ThreadCount,
-                                    processEntry->ProcessId
+                                    entradaProcesso->ProcessName.Buffer,
+                                    entradaProcesso->ThreadCount,
+                                    entradaProcesso->ProcessId
                                 );
 
                                 // Escreva no arquivo
@@ -106,8 +113,8 @@ NTSTATUS ListarProcessos()
                         }
                         
                         // Ache novos processos
-                        processEntry = (PSYSTEM_PROCESSES)((BYTE*)processEntry + processEntry->NextEntryDelta);
-                    } while (processEntry->NextEntryDelta);
+                        entradaProcesso = (PSYSTEM_PROCESSES)((BYTE*)entradaProcesso + entradaProcesso->NextEntryDelta);
+                    } while (entradaProcesso->NextEntryDelta);
                 }
 
                 // Libere
@@ -120,6 +127,8 @@ NTSTATUS ListarProcessos()
     return Status;
 }
 
+typedef PETHREAD NTKERNELAPI(*PSGETNEXTPROCESSTHREAD)(PEPROCESS Process, PETHREAD Thread);
+
 /// <summary>
 /// Termina um processo
 /// </summary>
@@ -127,7 +136,6 @@ NTSTATUS ListarProcessos()
 /// <returns></returns>
 NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
 {
-
     // Status
     NTSTATUS Status = STATUS_SUCCESS;
 
@@ -135,11 +143,13 @@ NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
     HANDLE AlcaProcesso;
     OBJECT_ATTRIBUTES Atributos;
 
+    PETHREAD Thread;
+
     // ID
     CLIENT_ID ClienteID;
 
-    // Copie o tamnho do atributo
-    memset(&Atributos, 0, sizeof(OBJECT_ATTRIBUTES));
+    // Inicie os atributos
+    InitializeObjectAttributes(&Atributos, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
 
     // Sete o valor
     ClienteID.UniqueProcess = ProcessID;
@@ -157,7 +167,6 @@ NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
     // Termine o processo
     Status = ZwTerminateProcess(AlcaProcesso, -1);
 
-
     // Feche a alça
     ZwClose(AlcaProcesso);
 
@@ -171,12 +180,6 @@ PsReferenceProcessFilePointer(
     IN  PEPROCESS Process, // O processo
     OUT PVOID* OutFileObject // Arquivo
 );
-
-typedef NTSTATUS(*ZWSUSPENDPROCESS)
-(
-    IN ULONG ProcessHandle  // Handle to the process
-    );
-ZWSUSPENDPROCESS ZwSuspendProcess;
 
 /// <summary>
 /// Obtém um local de um processo

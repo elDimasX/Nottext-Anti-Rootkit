@@ -52,7 +52,7 @@
     <ClInclude Include="minifilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rootkitOperations.h">
+    <ClInclude Include="filesIRP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,6 @@
 ﻿
+#include "filesIRP.h"
+
 /// <summary>
 /// Escreve em um arquivo
 /// </summary>
@@ -245,7 +247,6 @@ NTSTATUS CopiarArquivo(_In_ PUNICODE_STRING Arquivo, _In_ PUNICODE_STRING Arquiv
 
                     Offset.QuadPart += Tamanho;
                 }
-
             }
         }
     }
@@ -622,12 +623,12 @@ NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOL
                                 ListarPasta(NomeCompleto, TRUE, FALSE);
 
                                 // Delete a pasta
-                                DeletarArquivo(NomeCompleto);
+                                DeletarArquivo(NomeCompleto, TRUE);
                             }
 
                             // Se não
                             else {
-                                DeletarArquivo(NomeCompleto);
+                                DeletarArquivo(NomeCompleto, FALSE);
                             }
                         }
 
@@ -666,7 +667,7 @@ NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOL
     // Se for para deletar
     if (Deletar == TRUE && PrimeiraPasta == TRUE)
     {
-        Status = DeletarArquivo(Pasta);
+        Status = DeletarArquivo(Pasta, TRUE);
     }
 
     KeDetachProcess();
@@ -675,36 +676,27 @@ NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOL
 }
 
 /// <summary>
-/// Completa uma função IRP
-/// </summary>
-/// <param name="DeviceObject"></param>
-/// <param name="Irp"></param>
-/// <param name="Context"></param>
-/// <returns></returns>
-NTSTATUS CompletarFuncaoIRP(PDEVICE_OBJECT DeviceObject, PIRP Irp, PVOID Context)
-{
-    PKEVENT Event = (PKEVENT)Context;
-
-    if (Event)
-        KeSetEvent(Event, 0, 0);
-
-    return STATUS_MORE_PROCESSING_REQUIRED;
-}
-
-/// <summary>
 /// Completa a rotina de remover o somente-leitura
 /// </summary>
-NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Contexto)
+NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp, _In_ PVOID Contexto OPTIONAL)
 {
     // Configure o STATUS
-    Irp->UserIosb->Status = Irp->IoStatus.Status;
-    Irp->UserIosb->Information = Irp->IoStatus.Information;
+    *Irp->UserIosb = Irp->IoStatus;
 
-    // Sete o evento
-    KeSetEvent(Irp->UserEvent, IO_NO_INCREMENT, FALSE);
+    // Se tiver o evento
+    if (Irp->UserEvent)
+        KeSetEvent(Irp->UserEvent, IO_NO_INCREMENT, 0);
+    
+    // Se tiver um buffer
+    if (Irp->MdlAddress)
+    {
+        // Libere-o
+        IoFreeMdl(Irp->MdlAddress);
+        Irp->MdlAddress = NULL;
+    }
 
+    // Libere o IRP
     IoFreeIrp(Irp);
-
     return STATUS_MORE_PROCESSING_REQUIRED;
 }
 
@@ -713,11 +705,10 @@ NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp,
 /// </summary>
 /// <param name="FileHandle"></param>
 /// <returns></returns>
-BOOLEAN IrpSetarAtributos(_In_ HANDLE Alca)
+BOOLEAN IrpSetarAtributos(PFILE_OBJECT ObjetoArquivo)
 {
     // Arquivo
     NTSTATUS Status = STATUS_SUCCESS;
-    PFILE_OBJECT ObjetoArquivo;
 
     // Device
     PDEVICE_OBJECT DispositivoObjetivo, BaseDispositivo;
@@ -729,18 +720,6 @@ BOOLEAN IrpSetarAtributos(_In_ HANDLE Alca)
     IO_STATUS_BLOCK ioStatus;
     PIO_STACK_LOCATION irpSp;
 
-    // Obtenha as informações
-    Status = ObReferenceObjectByHandle(Alca,
-        DELETE,
-        *IoFileObjectType,
-        KernelMode,
-        &ObjetoArquivo,
-        NULL);
-
-    // Se falhar
-    if (!NT_SUCCESS(Status))
-        return FALSE;
-
     // Obtenha o dsispotivo
     DispositivoObjetivo = IoGetRelatedDeviceObject(ObjetoArquivo);
 
@@ -748,8 +727,8 @@ BOOLEAN IrpSetarAtributos(_In_ HANDLE Alca)
 
     Irp = IoAllocateIrp(BaseDispositivo->StackSize, TRUE);
 
-    if (Irp == NULL) {
-        ObDereferenceObject(ObjetoArquivo);
+    if (Irp == NULL)
+    {
         return FALSE;
     }
 
@@ -757,7 +736,7 @@ BOOLEAN IrpSetarAtributos(_In_ HANDLE Alca)
     KeInitializeEvent(&evento, SynchronizationEvent, FALSE);
 
     // Copie as informações
-    memset(&Informacao, 0, 0x28);
+    memset(&Informacao, 0, sizeof(FILE_BASIC_INFORMATION));
 
     // Arquivo normal
     Informacao.FileAttributes = FILE_ATTRIBUTE_NORMAL;
@@ -773,6 +752,7 @@ BOOLEAN IrpSetarAtributos(_In_ HANDLE Alca)
     irpSp->MajorFunction = IRP_MJ_SET_INFORMATION;
     irpSp->DeviceObject = BaseDispositivo;
     irpSp->FileObject = ObjetoArquivo;
+    irpSp->Parameters.SetFile.ReplaceIfExists = TRUE;
     irpSp->Parameters.SetFile.Length = sizeof(FILE_BASIC_INFORMATION);
     irpSp->Parameters.SetFile.FileInformationClass = FileBasicInformation;
     irpSp->Parameters.SetFile.FileObject = ObjetoArquivo;
@@ -792,115 +772,6 @@ BOOLEAN IrpSetarAtributos(_In_ HANDLE Alca)
     // Espere
     KeWaitForSingleObject(&evento, Executive, KernelMode, TRUE, NULL);
 
-    // Libere
-    ObDereferenceObject(ObjetoArquivo);
-
-    return TRUE;
-}
-
-/// <summary>
-/// Remove um arquivo á força
-/// </summary>
-/// <param name="Alca"></param>
-/// <param name="EPasta"></param>
-/// <returns></returns>
-BOOLEAN ForcarRemocaoArquivo(_In_ HANDLE Alca, _In_ BOOLEAN EPasta)
-{
-    NTSTATUS Status = STATUS_SUCCESS;
-    PFILE_OBJECT ObjetoArquivo;
-
-    PDEVICE_OBJECT ObjetoDispositivo, ObjetoBase;
-    PIRP Irp;
-    KEVENT Evento;
-    FILE_DISPOSITION_INFORMATION Informacao;
-    IO_STATUS_BLOCK ioStatus;
-    PIO_STACK_LOCATION irpSp;
-    PSECTION_OBJECT_POINTERS ObjetoPonteiro;
-
-    // Limpe os atributos
-    IrpSetarAtributos(Alca);
-
-    // Obtenha o objeto
-    Status = ObReferenceObjectByHandle(Alca,
-        DELETE,
-        *IoFileObjectType,
-        KernelMode,
-        &ObjetoArquivo,
-        NULL);
-
-    if (!NT_SUCCESS(Status))
-        return FALSE;
-
-    ObjetoDispositivo = IoGetRelatedDeviceObject(ObjetoArquivo);
-
-    // Obtenha a base
-    ObjetoBase = IoGetDeviceAttachmentBaseRef(ObjetoDispositivo);
-
-    // Aloque o IRP
-    Irp = IoAllocateIrp(ObjetoBase->StackSize, TRUE);
-
-    // Se falhar
-    if (Irp == NULL) {
-        // Libere
-        ObDereferenceObject(ObjetoArquivo);
-        return FALSE;
-    }
-
-    // Inicie o evento
-    KeInitializeEvent(&Evento, SynchronizationEvent, FALSE);
-
-    // Delete
-    Informacao.DeleteFile = TRUE;
-
-    // IRP
-    Irp->AssociatedIrp.SystemBuffer = &Informacao;
-    Irp->UserEvent = &Evento;
-    Irp->UserIosb = &ioStatus;
-    Irp->Tail.Overlay.OriginalFileObject = ObjetoArquivo;
-    Irp->Tail.Overlay.Thread = (PETHREAD)KeGetCurrentThread();
-    Irp->RequestorMode = KernelMode;
-
-    // Configure
-    irpSp = IoGetNextIrpStackLocation(Irp);
-    irpSp->MajorFunction = IRP_MJ_SET_INFORMATION;
-    irpSp->DeviceObject = ObjetoBase;
-    irpSp->FileObject = ObjetoArquivo;
-    irpSp->Parameters.SetFile.Length = sizeof(FILE_DISPOSITION_INFORMATION);
-    irpSp->Parameters.SetFile.FileInformationClass = FileDispositionInformation;
-    irpSp->Parameters.SetFile.FileObject = ObjetoArquivo;
-
-    // Complete a rotina
-    IoSetCompletionRoutine(
-        Irp,
-        CompletarAtributo,
-        &Evento,
-        TRUE,
-        TRUE,
-        TRUE);
-
-    // Se não for uma pasta
-    if (!EPasta) {
-
-        // Limpe as sesões
-        ObjetoPonteiro = ObjetoArquivo->SectionObjectPointer;
-        ObjetoPonteiro->ImageSectionObject = 0;
-        ObjetoPonteiro->DataSectionObject = 0;
-
-        // A MmFlushImageSection libera a seção da imagem para um arquivo. 
-        CONST BOOLEAN ImageSectionFlushed = MmFlushImageSection(
-            ObjetoPonteiro,
-            MmFlushForDelete //  O arquivo está sendo excluído. 
-        );
-    }
-
-    // Chame o IRP
-    IoCallDriver(ObjetoBase, Irp);
-
-    // Espere
-    KeWaitForSingleObject(&Evento, Executive, KernelMode, TRUE, NULL);
-
-    ObDereferenceObject(ObjetoArquivo);
-
     return TRUE;
 }
 
@@ -909,7 +780,7 @@ BOOLEAN ForcarRemocaoArquivo(_In_ HANDLE Alca, _In_ BOOLEAN EPasta)
 /// </summary>
 /// <param name="Arquivo"></param>
 /// <returns></returns>
-NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo)
+NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo, BOOLEAN ePasta)
 {
     // ANSI e STRING
     UNICODE_STRING UnArquivo;
@@ -936,64 +807,32 @@ NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo)
 
     __try {
 
-        // Abra a pasta
-        Status = IoCreateFile(
-            &Alca,
-            FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY,
-            &Atributos,
-            &Io,
-            0,
-            FILE_ATTRIBUTE_NORMAL,
-            FILE_SHARE_DELETE,
-            FILE_OPEN,
-            FILE_DIRECTORY_FILE,
-            NULL,
-            0,
-            0,
-            NULL,
-            IO_NO_PARAMETER_CHECKING
-        );
+        // Primeiro, tente deletar de forma simples
+        Status = DeletarArquivoNormal(UnArquivo);
 
-        // Se for uma pasta
-        if (NT_SUCCESS(Status))
+        // Se falhar
+        if (!NT_SUCCESS(Status))
         {
-            // Se falhar
-            if (!ForcarRemocaoArquivo(Alca, TRUE))
-            {
-                Status = STATUS_UNSUCCESSFUL;
-            }
+            // Objeto
+            PFILE_OBJECT ObjetoArquivo = NULL;
 
-            ZwClose(Alca);
-        }
-        else {
+            // Abra o arquivo em IRP
+            Status = AbrirArquivoIRP(UnArquivo, GENERIC_READ | DELETE, &Io, &ObjetoArquivo);
 
-            // Abra o arquivo
-            Status = IoCreateFile(
-                &Alca,
-                FILE_READ_ATTRIBUTES,
-                &Atributos,
-                &Io,
-                0,
-                FILE_ATTRIBUTE_NORMAL,
-                FILE_SHARE_DELETE,
-                FILE_OPEN,
-                0,
-                NULL,
-                0,
-                0,
-                NULL,
-                IO_NO_PARAMETER_CHECKING
-            );
-
+            // Se funcionar
             if (NT_SUCCESS(Status))
             {
-                // Se falhar
-                if (!ForcarRemocaoArquivo(Alca, FALSE))
-                {
-                    Status = STATUS_UNSUCCESSFUL;
-                }
+                DbgPrint("Aberto");
 
-                ZwClose(Alca);
+                // Tire os atributos
+                IrpSetarAtributos(ObjetoArquivo);
+
+                //Status = ObOpenObjectByPointer(ObjetoArquivo, 0, NULL, DELETE, *IoFileObjectType, KernelMode, &Alca);
+
+                Status = DeletarObjetoArquivo(ObjetoArquivo, ePasta);
+
+                // Libere o objeto
+                ObDereferenceObject(ObjetoArquivo);
             }
         }
     } __except (EXCEPTION_EXECUTE_HANDLER){ }

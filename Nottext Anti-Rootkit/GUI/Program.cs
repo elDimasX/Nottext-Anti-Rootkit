@@ -81,11 +81,18 @@ namespace GUI
                 // Salve o programa que atualiza os processos
                 File.WriteAllBytes(Application.StartupPath + "\\KernelProcessList.exe", Properties.Resources.KernelProcessList);
 
+                File.WriteAllBytes(Application.StartupPath + "\\Guna.UI2.dll", Properties.Resources.Guna_UI2);
+
                 // Salve o CAT
                 File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.cat", Properties.Resources.nottextantidriver1);
 
                 // Salve o INF
                 File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.inf", Properties.Resources.NottextAntiDriverInf);
+
+                // Arquivo de limpar os arquivos depois
+                File.WriteAllBytes(Application.StartupPath + "\\Cleanup.exe", Properties.Resources.CleanupFiles);
+
+                await IniciarProcesso("sc.exe", "create CleanupNtAntiRootkitFiles binPath= " + '"' + Application.StartupPath + "\\Cleanup.exe" + '"' + " start= auto");
 
                 // Arquivo INF
                 string inf = pastaDrivers + "NottextAntiDriver.inf";
@@ -176,7 +183,7 @@ namespace GUI
         {
             ExecutandoAdministrador().Wait();
 
-            Application.EnableVisualStyles();
+            //Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             CarregarDriver().Wait();
 

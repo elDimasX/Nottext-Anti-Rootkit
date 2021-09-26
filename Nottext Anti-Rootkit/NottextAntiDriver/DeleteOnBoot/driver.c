@@ -65,19 +65,20 @@
 /// <summary>
 /// Inicia o driver
 /// </summary>
-/// <param name="DriverObject"></param>
-/// <param name="RegistryPath"></param>
+/// <param name="ObjetoDriver"></param>
+/// <param name="RegistroLocal"></param>
 /// <returns></returns>
-NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
+NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT ObjetoDriver, _In_ PUNICODE_STRING RegistroLocal)
 {
-	UNREFERENCED_PARAMETER(RegistryPath);
+	UNREFERENCED_PARAMETER(RegistroLocal);
+	DeletarNoBoot();
 
 	// 1 Segundo
 	Tempo.QuadPart = -1000 * -1000 * 1;
 
 	// Crie o dispositivo para comunicações
 	NTSTATUS Status = IoCreateDevice(
-		DriverObject,
+		ObjetoDriver,
 		0,
 		&DispositivoNome,
 		FILE_DEVICE_UNKNOWN,
@@ -97,7 +98,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		else {
 
 			// Registre
-			Status = FltRegisterFilter(DriverObject, &Registracao, &FiltroMinifiltro);
+			Status = FltRegisterFilter(ObjetoDriver, &Registracao, &FiltroMinifiltro);
 
 			if (NT_SUCCESS(Status))
 			{
@@ -106,9 +107,9 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		}
 
 		// Configure as mensagens
-		DriverObject->MajorFunction[IRP_MJ_CREATE] = IRPCriado;
-		DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IRPRecebido;
-		DriverObject->MajorFunction[IRP_MJ_CLOSE] = IRPFechado;
+		ObjetoDriver->MajorFunction[IRP_MJ_CREATE] = IRPCriado;
+		ObjetoDriver->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IRPRecebido;
+		ObjetoDriver->MajorFunction[IRP_MJ_CLOSE] = IRPFechado;
 	}
 
 	return STATUS_SUCCESS;

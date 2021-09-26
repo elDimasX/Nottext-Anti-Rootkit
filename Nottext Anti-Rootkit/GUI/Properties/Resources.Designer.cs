@@ -63,6 +63,36 @@ namespace GUI.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Byte[].
         /// </summary>
+        internal static byte[] CleanupFiles {
+            get {
+                object obj = ResourceManager.GetObject("CleanupFiles", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap dd6056e2ce4ed76a21424e90eb9a46cc_1024x1024 {
+            get {
+                object obj = ResourceManager.GetObject("dd6056e2ce4ed76a21424e90eb9a46cc_1024x1024", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
+        internal static byte[] Guna_UI2 {
+            get {
+                object obj = ResourceManager.GetObject("Guna_UI2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Byte[].
+        /// </summary>
         internal static byte[] KernelProcessList {
             get {
                 object obj = ResourceManager.GetObject("KernelProcessList", resourceCulture);
@@ -107,6 +137,16 @@ namespace GUI.Properties {
             get {
                 object obj = ResourceManager.GetObject("NottextAntiDriverX64", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pattern_gray_lines {
+            get {
+                object obj = ResourceManager.GetObject("pattern-gray-lines", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

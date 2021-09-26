@@ -50,7 +50,7 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 	}
 	else if (Io->Parameters.DeviceIoControl.IoControlCode == DELETAR_ARQUIVO)
 	{
-		if (NT_SUCCESS(DeletarArquivo(MensagemUsuario)))
+		if (NT_SUCCESS(DeletarArquivo(MensagemUsuario, FALSE)))
 		{
 			StatusRetornar = "success!";
 		}
@@ -195,13 +195,13 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 		}
 
 		// Tente alocar espaço na memória
-		NomeBackupCopiar = ExAllocatePoolWithTag(PagedPool, 700, 'copy');
+		NomeBackupCopiar = ExAllocatePoolWithTag(PagedPool, 800, 'copy');
 		
 		// Se conseguir
 		if (NomeBackupCopiar != NULL)
 		{
 			// Se for menor que 690
-			if (sizeof(MensagemUsuario) < 690)
+			if (sizeof(MensagemUsuario) < 790)
 			{
 				// Copie o backup
 				sprintf(
@@ -310,8 +310,6 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 /// <returns></returns>
 NTSTATUS IRPFechado(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 {
-
-
 	// Informações e status
 	Irp->IoStatus.Status = STATUS_SUCCESS;
 	Irp->IoStatus.Information = 0;
