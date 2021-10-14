@@ -21,6 +21,7 @@ Se você tiver alguma ideia de como posso melhorar meu anti-rootkit, por favor m
 # 1.0.0.4
 Essa versão inclui novas funcionalidades e melhorias
 - Remoção de arquivos melhorado
+- Melhoria na finalização de processos (podendo elimir processos com gancho SSDT)
 - Verifica os serviços instalados na máquina
 - Verifica os drivers/imagens carregados no sistema
 - Iniciar/Parar serviço de driver apartir do kernel
