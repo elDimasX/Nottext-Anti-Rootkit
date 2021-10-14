@@ -34,6 +34,7 @@ namespace GUI
             this.menuArquivos = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.deleteFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deletarNoBoottoolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.protegerArquivoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.criarArquivoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.copiarArquivoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renomearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,42 +44,61 @@ namespace GUI
             this.menuProcessos = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.finalizarProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.finalizarBloquearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.protegerProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ocultarProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.listarProcessosStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.arrastar = new Guna.UI2.WinForms.Guna2DragControl(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
-            this.minimizar = new Guna.UI2.WinForms.Guna2ControlBox();
-            this.fechar = new Guna.UI2.WinForms.Guna2ControlBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.listView3 = new System.Windows.Forms.ListView();
+            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.menuDrivers = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.atualizarDriverToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabPage6 = new System.Windows.Forms.TabPage();
+            this.listView4 = new System.Windows.Forms.ListView();
+            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.menuServicos = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.deletarArquivoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iniciarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pararToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.atualizarServicoStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.TextBox();
             this.listView1 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.label1 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.listView2 = new System.Windows.Forms.ListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.sempreTopo = new System.Windows.Forms.CheckBox();
             this.reiniciar = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.desligar = new System.Windows.Forms.Button();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.titulo = new System.Windows.Forms.Label();
-            this.arrastar2 = new Guna.UI2.WinForms.Guna2DragControl(this.components);
-            this.guna2ResizeForm1 = new Guna.UI2.WinForms.Guna2ResizeForm(this.components);
+            this.arrastar = new Guna.UI2.WinForms.Guna2ResizeForm(this.components);
+            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader12 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.deletarDriverToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.menuArquivos.SuspendLayout();
             this.menuProcessos.SuspendLayout();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tabControl1.SuspendLayout();
+            this.tabPage5.SuspendLayout();
+            this.menuDrivers.SuspendLayout();
+            this.tabPage6.SuspendLayout();
+            this.menuServicos.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
@@ -91,6 +111,7 @@ namespace GUI
             this.menuArquivos.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.deleteFileToolStripMenuItem,
             this.deletarNoBoottoolStripMenuItem1,
+            this.protegerArquivoToolStripMenuItem,
             this.criarArquivoToolStripMenuItem,
             this.copiarArquivoToolStripMenuItem,
             this.renomearToolStripMenuItem,
@@ -98,11 +119,11 @@ namespace GUI
             this.atualizarToolStripMenuItem,
             this.irParaUmaPastaToolStripMenuItem});
             this.menuArquivos.Name = "menuArquivos";
-            this.menuArquivos.Size = new System.Drawing.Size(194, 164);
+            this.menuArquivos.Size = new System.Drawing.Size(194, 186);
             // 
             // deleteFileToolStripMenuItem
             // 
-            this.deleteFileToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.deleteFileToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.deleteFileToolStripMenuItem.Name = "deleteFileToolStripMenuItem";
             this.deleteFileToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.deleteFileToolStripMenuItem.Text = "Deletar";
@@ -110,15 +131,23 @@ namespace GUI
             // 
             // deletarNoBoottoolStripMenuItem1
             // 
-            this.deletarNoBoottoolStripMenuItem1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.deletarNoBoottoolStripMenuItem1.ForeColor = System.Drawing.Color.Black;
             this.deletarNoBoottoolStripMenuItem1.Name = "deletarNoBoottoolStripMenuItem1";
             this.deletarNoBoottoolStripMenuItem1.Size = new System.Drawing.Size(193, 22);
             this.deletarNoBoottoolStripMenuItem1.Text = "Deletar no Boot";
             this.deletarNoBoottoolStripMenuItem1.Click += new System.EventHandler(this.deletarNoBoottoolStripMenuItem_Click);
             // 
+            // protegerArquivoToolStripMenuItem
+            // 
+            this.protegerArquivoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
+            this.protegerArquivoToolStripMenuItem.Name = "protegerArquivoToolStripMenuItem";
+            this.protegerArquivoToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.protegerArquivoToolStripMenuItem.Text = "Proteger";
+            this.protegerArquivoToolStripMenuItem.Click += new System.EventHandler(this.protegerArquivoToolStripMenuItem_Click);
+            // 
             // criarArquivoToolStripMenuItem
             // 
-            this.criarArquivoToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.criarArquivoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.criarArquivoToolStripMenuItem.Name = "criarArquivoToolStripMenuItem";
             this.criarArquivoToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.criarArquivoToolStripMenuItem.Text = "Criar arquivo";
@@ -126,7 +155,7 @@ namespace GUI
             // 
             // copiarArquivoToolStripMenuItem
             // 
-            this.copiarArquivoToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.copiarArquivoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.copiarArquivoToolStripMenuItem.Name = "copiarArquivoToolStripMenuItem";
             this.copiarArquivoToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.copiarArquivoToolStripMenuItem.Text = "Copiar arquivo";
@@ -134,7 +163,7 @@ namespace GUI
             // 
             // renomearToolStripMenuItem
             // 
-            this.renomearToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.renomearToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.renomearToolStripMenuItem.Name = "renomearToolStripMenuItem";
             this.renomearToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.renomearToolStripMenuItem.Text = "Renomear";
@@ -147,7 +176,7 @@ namespace GUI
             // 
             // atualizarToolStripMenuItem
             // 
-            this.atualizarToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.atualizarToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.atualizarToolStripMenuItem.Name = "atualizarToolStripMenuItem";
             this.atualizarToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.atualizarToolStripMenuItem.Text = "Atualizar";
@@ -155,7 +184,7 @@ namespace GUI
             // 
             // irParaUmaPastaToolStripMenuItem
             // 
-            this.irParaUmaPastaToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.irParaUmaPastaToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.irParaUmaPastaToolStripMenuItem.Name = "irParaUmaPastaToolStripMenuItem";
             this.irParaUmaPastaToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.irParaUmaPastaToolStripMenuItem.Text = "Ir para uma pasta";
@@ -167,15 +196,16 @@ namespace GUI
             this.menuProcessos.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.finalizarProcessoToolStripMenuItem,
             this.finalizarBloquearToolStripMenuItem,
+            this.protegerProcessoToolStripMenuItem,
             this.ocultarProcessoToolStripMenuItem,
             this.toolStripSeparator2,
             this.listarProcessosStripMenuItem});
             this.menuProcessos.Name = "menuArquivos";
-            this.menuProcessos.Size = new System.Drawing.Size(215, 98);
+            this.menuProcessos.Size = new System.Drawing.Size(215, 120);
             // 
             // finalizarProcessoToolStripMenuItem
             // 
-            this.finalizarProcessoToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.finalizarProcessoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.finalizarProcessoToolStripMenuItem.Name = "finalizarProcessoToolStripMenuItem";
             this.finalizarProcessoToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.finalizarProcessoToolStripMenuItem.Text = "Finalizar processo";
@@ -183,15 +213,23 @@ namespace GUI
             // 
             // finalizarBloquearToolStripMenuItem
             // 
-            this.finalizarBloquearToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.finalizarBloquearToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.finalizarBloquearToolStripMenuItem.Name = "finalizarBloquearToolStripMenuItem";
             this.finalizarBloquearToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.finalizarBloquearToolStripMenuItem.Text = "Finalizar && Bloquear";
             this.finalizarBloquearToolStripMenuItem.Click += new System.EventHandler(this.finalizarBloquearToolStripMenuItem_Click);
             // 
+            // protegerProcessoToolStripMenuItem
+            // 
+            this.protegerProcessoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
+            this.protegerProcessoToolStripMenuItem.Name = "protegerProcessoToolStripMenuItem";
+            this.protegerProcessoToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.protegerProcessoToolStripMenuItem.Text = "Proteger processo";
+            this.protegerProcessoToolStripMenuItem.Click += new System.EventHandler(this.protegerProcessoToolStripMenuItem_Click);
+            // 
             // ocultarProcessoToolStripMenuItem
             // 
-            this.ocultarProcessoToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.ocultarProcessoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.ocultarProcessoToolStripMenuItem.Name = "ocultarProcessoToolStripMenuItem";
             this.ocultarProcessoToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.ocultarProcessoToolStripMenuItem.Text = "Ocultar processo";
@@ -204,105 +242,222 @@ namespace GUI
             // 
             // listarProcessosStripMenuItem
             // 
-            this.listarProcessosStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.listarProcessosStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.listarProcessosStripMenuItem.Name = "listarProcessosStripMenuItem";
             this.listarProcessosStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.listarProcessosStripMenuItem.Text = "Atualizar";
             this.listarProcessosStripMenuItem.Click += new System.EventHandler(this.listarProcessosStripMenuItem_Click);
-            // 
-            // arrastar
-            // 
-            this.arrastar.TargetControl = this.panel1;
             // 
             // panel1
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.BackColor = System.Drawing.Color.White;
-            this.panel1.BackgroundImage = global::GUI.Properties.Resources.pattern_gray_lines;
-            this.panel1.Controls.Add(this.minimizar);
-            this.panel1.Controls.Add(this.fechar);
-            this.panel1.Controls.Add(this.pictureBox1);
+            this.panel1.BackColor = System.Drawing.SystemColors.Control;
             this.panel1.Controls.Add(this.tabControl1);
-            this.panel1.Controls.Add(this.titulo);
+            this.panel1.ForeColor = System.Drawing.Color.Black;
             this.panel1.Location = new System.Drawing.Point(1, 1);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(818, 540);
+            this.panel1.Size = new System.Drawing.Size(818, 518);
             this.panel1.TabIndex = 5;
-            // 
-            // minimizar
-            // 
-            this.minimizar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.minimizar.BackColor = System.Drawing.Color.Transparent;
-            this.minimizar.ControlBoxType = Guna.UI2.WinForms.Enums.ControlBoxType.MinimizeBox;
-            this.minimizar.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.minimizar.FillColor = System.Drawing.Color.Transparent;
-            this.minimizar.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.minimizar.HoverState.Parent = this.minimizar;
-            this.minimizar.IconColor = System.Drawing.Color.Black;
-            this.minimizar.Location = new System.Drawing.Point(727, 0);
-            this.minimizar.Name = "minimizar";
-            this.minimizar.ShadowDecoration.Parent = this.minimizar;
-            this.minimizar.Size = new System.Drawing.Size(45, 29);
-            this.minimizar.TabIndex = 3;
-            // 
-            // fechar
-            // 
-            this.fechar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.fechar.BackColor = System.Drawing.Color.Transparent;
-            this.fechar.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.fechar.FillColor = System.Drawing.Color.Transparent;
-            this.fechar.HoverState.FillColor = System.Drawing.Color.Crimson;
-            this.fechar.HoverState.IconColor = System.Drawing.Color.White;
-            this.fechar.HoverState.Parent = this.fechar;
-            this.fechar.IconColor = System.Drawing.Color.Black;
-            this.fechar.Location = new System.Drawing.Point(772, 0);
-            this.fechar.Name = "fechar";
-            this.fechar.ShadowDecoration.Parent = this.fechar;
-            this.fechar.Size = new System.Drawing.Size(45, 29);
-            this.fechar.TabIndex = 2;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox1.BackgroundImage = global::GUI.Properties.Resources.dd6056e2ce4ed76a21424e90eb9a46cc_1024x1024;
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.pictureBox1.Enabled = false;
-            this.pictureBox1.Location = new System.Drawing.Point(3, 3);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(56, 58);
-            this.pictureBox1.TabIndex = 4;
-            this.pictureBox1.TabStop = false;
             // 
             // tabControl1
             // 
             this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Controls.Add(this.tabPage5);
+            this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Location = new System.Drawing.Point(0, 66);
+            this.tabControl1.Location = new System.Drawing.Point(0, 2);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(817, 469);
+            this.tabControl1.Size = new System.Drawing.Size(817, 507);
             this.tabControl1.TabIndex = 0;
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.listView3);
+            this.tabPage5.Location = new System.Drawing.Point(4, 23);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(809, 480);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "Drivers";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // listView3
+            // 
+            this.listView3.Alignment = System.Windows.Forms.ListViewAlignment.Default;
+            this.listView3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView3.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader8,
+            this.columnHeader12});
+            this.listView3.ContextMenuStrip = this.menuDrivers;
+            this.listView3.ForeColor = System.Drawing.Color.Black;
+            this.listView3.FullRowSelect = true;
+            this.listView3.GridLines = true;
+            this.listView3.HideSelection = false;
+            this.listView3.Location = new System.Drawing.Point(0, 0);
+            this.listView3.Margin = new System.Windows.Forms.Padding(2);
+            this.listView3.Name = "listView3";
+            this.listView3.Size = new System.Drawing.Size(812, 480);
+            this.listView3.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listView3.TabIndex = 3;
+            this.listView3.UseCompatibleStateImageBehavior = false;
+            this.listView3.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader8
+            // 
+            this.columnHeader8.Text = "Imagem";
+            this.columnHeader8.Width = 197;
+            // 
+            // menuDrivers
+            // 
+            this.menuDrivers.Font = new System.Drawing.Font("Consolas", 9F);
+            this.menuDrivers.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deletarDriverToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.atualizarDriverToolStripMenuItem});
+            this.menuDrivers.Name = "menuArquivos";
+            this.menuDrivers.Size = new System.Drawing.Size(181, 76);
+            // 
+            // atualizarDriverToolStripMenuItem
+            // 
+            this.atualizarDriverToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
+            this.atualizarDriverToolStripMenuItem.Name = "atualizarDriverToolStripMenuItem";
+            this.atualizarDriverToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.atualizarDriverToolStripMenuItem.Text = "Atualizar";
+            this.atualizarDriverToolStripMenuItem.Click += new System.EventHandler(this.atualizarDriverToolStripMenuItem_Click);
+            // 
+            // tabPage6
+            // 
+            this.tabPage6.BackColor = System.Drawing.Color.Transparent;
+            this.tabPage6.Controls.Add(this.listView4);
+            this.tabPage6.Location = new System.Drawing.Point(4, 23);
+            this.tabPage6.Name = "tabPage6";
+            this.tabPage6.Size = new System.Drawing.Size(809, 480);
+            this.tabPage6.TabIndex = 0;
+            this.tabPage6.Text = "Serviços";
+            // 
+            // listView4
+            // 
+            this.listView4.Alignment = System.Windows.Forms.ListViewAlignment.Default;
+            this.listView4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listView4.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader9,
+            this.columnHeader10,
+            this.columnHeader11});
+            this.listView4.ContextMenuStrip = this.menuServicos;
+            this.listView4.ForeColor = System.Drawing.Color.Black;
+            this.listView4.FullRowSelect = true;
+            this.listView4.GridLines = true;
+            this.listView4.HideSelection = false;
+            this.listView4.Location = new System.Drawing.Point(-2, 0);
+            this.listView4.Margin = new System.Windows.Forms.Padding(2);
+            this.listView4.Name = "listView4";
+            this.listView4.Size = new System.Drawing.Size(812, 480);
+            this.listView4.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listView4.TabIndex = 4;
+            this.listView4.UseCompatibleStateImageBehavior = false;
+            this.listView4.View = System.Windows.Forms.View.Details;
+            this.listView4.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView4_MouseClick);
+            // 
+            // columnHeader9
+            // 
+            this.columnHeader9.Text = "Serviço";
+            this.columnHeader9.Width = 233;
+            // 
+            // columnHeader10
+            // 
+            this.columnHeader10.Text = "Local";
+            this.columnHeader10.Width = 441;
+            // 
+            // columnHeader11
+            // 
+            this.columnHeader11.Text = "Tipo";
+            this.columnHeader11.Width = 97;
+            // 
+            // menuServicos
+            // 
+            this.menuServicos.Font = new System.Drawing.Font("Consolas", 9F);
+            this.menuServicos.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deletarArquivoToolStripMenuItem,
+            this.iniciarToolStripMenuItem,
+            this.pararToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.atualizarServicoStripMenuItem1});
+            this.menuServicos.Name = "menuArquivos";
+            this.menuServicos.Size = new System.Drawing.Size(180, 98);
+            // 
+            // deletarArquivoToolStripMenuItem
+            // 
+            this.deletarArquivoToolStripMenuItem.Name = "deletarArquivoToolStripMenuItem";
+            this.deletarArquivoToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+            this.deletarArquivoToolStripMenuItem.Text = "Deletar arquivo";
+            this.deletarArquivoToolStripMenuItem.Click += new System.EventHandler(this.deletarArquivoToolStripMenuItem_Click);
+            // 
+            // iniciarToolStripMenuItem
+            // 
+            this.iniciarToolStripMenuItem.Name = "iniciarToolStripMenuItem";
+            this.iniciarToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+            this.iniciarToolStripMenuItem.Text = "Iniciar";
+            this.iniciarToolStripMenuItem.Click += new System.EventHandler(this.iniciarToolStripMenuItem_Click);
+            // 
+            // pararToolStripMenuItem
+            // 
+            this.pararToolStripMenuItem.Name = "pararToolStripMenuItem";
+            this.pararToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+            this.pararToolStripMenuItem.Text = "Parar";
+            this.pararToolStripMenuItem.Click += new System.EventHandler(this.pararToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(176, 6);
+            // 
+            // atualizarServicoStripMenuItem1
+            // 
+            this.atualizarServicoStripMenuItem1.ForeColor = System.Drawing.Color.Black;
+            this.atualizarServicoStripMenuItem1.Name = "atualizarServicoStripMenuItem1";
+            this.atualizarServicoStripMenuItem1.Size = new System.Drawing.Size(179, 22);
+            this.atualizarServicoStripMenuItem1.Text = "Atualizar";
+            this.atualizarServicoStripMenuItem1.Click += new System.EventHandler(this.atualizarServicoStripMenuItem1_Click);
             // 
             // tabPage1
             // 
-            this.tabPage1.BackColor = System.Drawing.Color.White;
-            this.tabPage1.Controls.Add(this.listView1);
+            this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
             this.tabPage1.Controls.Add(this.label1);
+            this.tabPage1.Controls.Add(this.listView1);
             this.tabPage1.Location = new System.Drawing.Point(4, 23);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tabPage1.Size = new System.Drawing.Size(809, 442);
+            this.tabPage1.Size = new System.Drawing.Size(809, 480);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Arquivos";
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.ForeColor = System.Drawing.Color.Black;
+            this.label1.Location = new System.Drawing.Point(3, 458);
+            this.label1.MaxLength = 0;
+            this.label1.Name = "label1";
+            this.label1.ReadOnly = true;
+            this.label1.Size = new System.Drawing.Size(800, 22);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "C:\\";
+            this.label1.TextChanged += new System.EventHandler(this.label1_TextChanged);
             // 
             // listView1
             // 
@@ -315,14 +470,14 @@ namespace GUI
             this.columnHeader2,
             this.columnHeader6});
             this.listView1.ContextMenuStrip = this.menuArquivos;
-            this.listView1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.listView1.ForeColor = System.Drawing.Color.Black;
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
             this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(0, 0);
             this.listView1.Margin = new System.Windows.Forms.Padding(2);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(812, 423);
+            this.listView1.Size = new System.Drawing.Size(812, 453);
             this.listView1.TabIndex = 2;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -344,18 +499,6 @@ namespace GUI
             this.columnHeader6.Text = "Tamanho";
             this.columnHeader6.Width = 125;
             // 
-            // label1
-            // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.BackColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(6, 427);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(793, 14);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "C:\\";
-            this.label1.TextChanged += new System.EventHandler(this.label1_TextChanged);
-            // 
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.White;
@@ -364,7 +507,7 @@ namespace GUI
             this.tabPage2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tabPage2.Size = new System.Drawing.Size(809, 442);
+            this.tabPage2.Size = new System.Drawing.Size(809, 480);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Processos";
             // 
@@ -379,14 +522,14 @@ namespace GUI
             this.columnHeader4,
             this.columnHeader5});
             this.listView2.ContextMenuStrip = this.menuProcessos;
-            this.listView2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.listView2.ForeColor = System.Drawing.Color.Black;
             this.listView2.FullRowSelect = true;
             this.listView2.GridLines = true;
             this.listView2.HideSelection = false;
             this.listView2.Location = new System.Drawing.Point(0, 0);
             this.listView2.Margin = new System.Windows.Forms.Padding(2);
             this.listView2.Name = "listView2";
-            this.listView2.Size = new System.Drawing.Size(812, 432);
+            this.listView2.Size = new System.Drawing.Size(812, 480);
             this.listView2.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listView2.TabIndex = 3;
             this.listView2.UseCompatibleStateImageBehavior = false;
@@ -409,7 +552,8 @@ namespace GUI
             // 
             // tabPage3
             // 
-            this.tabPage3.BackColor = System.Drawing.Color.White;
+            this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage3.Controls.Add(this.sempreTopo);
             this.tabPage3.Controls.Add(this.reiniciar);
             this.tabPage3.Controls.Add(this.label2);
             this.tabPage3.Controls.Add(this.desligar);
@@ -417,9 +561,21 @@ namespace GUI
             this.tabPage3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tabPage3.Size = new System.Drawing.Size(809, 442);
+            this.tabPage3.Size = new System.Drawing.Size(809, 480);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Configurações";
+            // 
+            // sempreTopo
+            // 
+            this.sempreTopo.AutoSize = true;
+            this.sempreTopo.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.sempreTopo.Location = new System.Drawing.Point(10, 83);
+            this.sempreTopo.Name = "sempreTopo";
+            this.sempreTopo.Size = new System.Drawing.Size(124, 18);
+            this.sempreTopo.TabIndex = 3;
+            this.sempreTopo.Text = "Sempre no topo";
+            this.sempreTopo.UseVisualStyleBackColor = true;
+            this.sempreTopo.CheckedChanged += new System.EventHandler(this.sempreTopo_CheckedChanged);
             // 
             // reiniciar
             // 
@@ -454,47 +610,52 @@ namespace GUI
             // 
             // tabPage4
             // 
-            this.tabPage4.BackColor = System.Drawing.Color.White;
-            this.tabPage4.Controls.Add(this.linkLabel1);
+            this.tabPage4.BackColor = System.Drawing.Color.Transparent;
+            this.tabPage4.Controls.Add(this.label5);
             this.tabPage4.Controls.Add(this.label4);
             this.tabPage4.Controls.Add(this.label3);
             this.tabPage4.Location = new System.Drawing.Point(4, 23);
             this.tabPage4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.tabPage4.Size = new System.Drawing.Size(809, 442);
+            this.tabPage4.Size = new System.Drawing.Size(809, 480);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Sobre";
             // 
-            // linkLabel1
+            // label5
             // 
-            this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.linkLabel1.Location = new System.Drawing.Point(59, 83);
-            this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(343, 14);
-            this.linkLabel1.TabIndex = 2;
-            this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "https://github.com/elDimasX/Nottext-Anti-Rootkit";
-            this.linkLabel1.VisitedLinkColor = System.Drawing.Color.Blue;
-            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.BackColor = System.Drawing.Color.Transparent;
+            this.label5.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label5.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.ForeColor = System.Drawing.Color.Blue;
+            this.label5.Location = new System.Drawing.Point(61, 84);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(343, 14);
+            this.label5.TabIndex = 3;
+            this.label5.Text = "https://github.com/elDimasX/Nottext-Anti-Rootkit";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
             // label4
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.BackColor = System.Drawing.Color.Transparent;
             this.label4.Location = new System.Drawing.Point(7, 13);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(793, 166);
             this.label4.TabIndex = 1;
-            this.label4.Text = "Nottext Anti-Rootkit \r\n________________________\r\n\r\nVersão do aplicativo: 1.0.0.3\r" +
+            this.label4.Text = "Nottext Anti-Rootkit \r\n________________________\r\n\r\nVersão do aplicativo: 1.0.0.4\r" +
     "\nDesenvolvido em: C# e C\r\nGitHub: ";
             // 
             // label3
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label3.Location = new System.Drawing.Point(7, 408);
+            this.label3.Location = new System.Drawing.Point(7, 426);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(796, 39);
             this.label3.TabIndex = 0;
@@ -502,33 +663,41 @@ namespace GUI
     "esenvolvido por Dimas Pereira";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // titulo
+            // columnHeader7
             // 
-            this.titulo.AutoSize = true;
-            this.titulo.BackColor = System.Drawing.Color.Transparent;
-            this.titulo.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.titulo.Location = new System.Drawing.Point(65, 23);
-            this.titulo.Name = "titulo";
-            this.titulo.Size = new System.Drawing.Size(250, 22);
-            this.titulo.TabIndex = 3;
-            this.titulo.Text = "Nottext Anti-Rootkit 1.3";
+            this.columnHeader7.DisplayIndex = 0;
+            this.columnHeader7.Text = "Arquivo";
+            this.columnHeader7.Width = 781;
             // 
-            // arrastar2
+            // columnHeader12
             // 
-            this.arrastar2.TargetControl = this.titulo;
+            this.columnHeader12.Text = "Local";
+            this.columnHeader12.Width = 579;
+            // 
+            // deletarDriverToolStripMenuItem
+            // 
+            this.deletarDriverToolStripMenuItem.Name = "deletarDriverToolStripMenuItem";
+            this.deletarDriverToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.deletarDriverToolStripMenuItem.Text = "Deletar driver";
+            this.deletarDriverToolStripMenuItem.Click += new System.EventHandler(this.deletarDriverToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 14F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.ClientSize = new System.Drawing.Size(820, 543);
+            this.ClientSize = new System.Drawing.Size(820, 521);
             this.Controls.Add(this.panel1);
             this.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.MinimumSize = new System.Drawing.Size(836, 560);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Nottext Anti-Rootkit";
@@ -536,10 +705,13 @@ namespace GUI
             this.menuArquivos.ResumeLayout(false);
             this.menuProcessos.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabControl1.ResumeLayout(false);
+            this.tabPage5.ResumeLayout(false);
+            this.menuDrivers.ResumeLayout(false);
+            this.tabPage6.ResumeLayout(false);
+            this.menuServicos.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
@@ -550,10 +722,6 @@ namespace GUI
         }
 
         #endregion
-
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.ContextMenuStrip menuArquivos;
         private System.Windows.Forms.ToolStripMenuItem deleteFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem criarArquivoToolStripMenuItem;
@@ -562,38 +730,58 @@ namespace GUI
         private System.Windows.Forms.ToolStripMenuItem listarProcessosStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem finalizarProcessoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem finalizarBloquearToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem copiarArquivoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renomearToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ocultarProcessoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem irParaUmaPastaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deletarNoBoottoolStripMenuItem1;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStripMenuItem protegerProcessoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem protegerArquivoToolStripMenuItem;
+        private Guna.UI2.WinForms.Guna2ResizeForm arrastar;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TextBox label1;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.ColumnHeader columnHeader6;
+        private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.ListView listView2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ColumnHeader columnHeader5;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ToolStripMenuItem copiarArquivoToolStripMenuItem;
-        private System.Windows.Forms.ColumnHeader columnHeader6;
-        private System.Windows.Forms.ToolStripMenuItem renomearToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ocultarProcessoToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.CheckBox sempreTopo;
+        private System.Windows.Forms.Button reiniciar;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button desligar;
-        private System.Windows.Forms.Button reiniciar;
         private System.Windows.Forms.TabPage tabPage4;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.LinkLabel linkLabel1;
-        private System.Windows.Forms.ToolStripMenuItem irParaUmaPastaToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem deletarNoBoottoolStripMenuItem1;
-        private Guna.UI2.WinForms.Guna2DragControl arrastar;
-        private Guna.UI2.WinForms.Guna2ControlBox fechar;
-        private Guna.UI2.WinForms.Guna2ControlBox minimizar;
-        private System.Windows.Forms.Label titulo;
-        private Guna.UI2.WinForms.Guna2DragControl arrastar2;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Panel panel1;
-        private Guna.UI2.WinForms.Guna2ResizeForm guna2ResizeForm1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ContextMenuStrip menuDrivers;
+        private System.Windows.Forms.ToolStripMenuItem atualizarDriverToolStripMenuItem;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.ListView listView3;
+        private System.Windows.Forms.ColumnHeader columnHeader7;
+        private System.Windows.Forms.TabPage tabPage6;
+        private System.Windows.Forms.ListView listView4;
+        private System.Windows.Forms.ColumnHeader columnHeader8;
+        private System.Windows.Forms.ColumnHeader columnHeader9;
+        private System.Windows.Forms.ContextMenuStrip menuServicos;
+        private System.Windows.Forms.ToolStripMenuItem atualizarServicoStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem pararToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem iniciarToolStripMenuItem;
+        private System.Windows.Forms.ColumnHeader columnHeader10;
+        private System.Windows.Forms.ColumnHeader columnHeader11;
+        private System.Windows.Forms.ToolStripMenuItem deletarArquivoToolStripMenuItem;
+        private System.Windows.Forms.ColumnHeader columnHeader12;
+        private System.Windows.Forms.ToolStripMenuItem deletarDriverToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 

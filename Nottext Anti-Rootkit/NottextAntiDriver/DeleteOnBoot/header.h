@@ -9,10 +9,14 @@
 // ZwQuerySystemInformation
 NTSTATUS NTAPI ZwQuerySystemInformation(ULONG SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
 
-// LOG de pastas para escanear
+PDRIVER_OBJECT ObjetoDriverGlobal = NULL;
+
+// LOG para enviar ao user-mode
 #define ARQUIVOS_LOG L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\folderScan.txt"
 #define PROCESSOS_LOG L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\processesScan.txt"
 #define ARQUIVO_DELETAR_BOOT L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\deleteOnBoot.txt"
+#define DRIVERS_LOG L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\driverScan.txt"
+#define SERVICOS_LOG L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\serviceScan.txt"
 
 // Nome do dispositivo
 UNICODE_STRING DispositivoNome = RTL_CONSTANT_STRING(L"\\Device\\NtAntiRtDriver"), SysNome = RTL_CONSTANT_STRING(L"\\??\\NtAntiRtDriver");
@@ -23,7 +27,6 @@ PDEVICE_OBJECT DispositivoGlobal;
 ///
 /// CTL_CODES
 /// 
-// CTL para deletar lsitar uma pasta
 #define LISTAR_PASTA CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0059, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 #define LISTAR_PROCESSOS CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0064, METHOD_BUFFERED, FILE_ANY_ACCESS)
@@ -50,6 +53,18 @@ PVOID NomeBackupCopiar;
 #define DESLIGAR_COMPUTADOR CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0086, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 #define REINICIAR_COMPUTADOR CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0088, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define PROTEGER_PROCESSO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0090, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define PROTEGER_ARQUIVO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0092, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define LISTAR_DRIVERS CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0094, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define DESCARREGAR_SERVICO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0096, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define LISTAR_SERVICOS CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0098, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define CARREGAR_SERVICO CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0100, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 /// <summary>
 /// Inicia o driver
@@ -96,15 +111,6 @@ NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp,
 NTSTATUS CriarArquivo(_In_ PUNICODE_STRING Arquivo);
 
 /// <summary>
-/// Escreve um texto em algum  arquivo
-/// </summary>
-/// <param name="FileToLog"></param>
-/// <param name="Message"></param>
-/// <param name="Mask"></param>
-/// <returns></returns>
-NTSTATUS EscreverNoArquivo(_In_ PUNICODE_STRING ArquivoParaEscrever, _In_ PUNICODE_STRING Mensagem, _In_ ACCESS_MASK Mask);
-
-/// <summary>
 /// Copia um arquivo
 /// </summary>
 /// <param name="Arquivo"></param>
@@ -117,8 +123,6 @@ NTSTATUS CopiarArquivo(_In_ PUNICODE_STRING Arquivo, _In_ PUNICODE_STRING Arquiv
 /// <param name="Arquivo"></param>
 /// <returns></returns>
 NTSTATUS RenomearArquivo(_In_ PUNICODE_STRING Arquivo);
-
-#define BUFFER_SIZE 500
 
 // Tempo
 LARGE_INTEGER Tempo;
@@ -138,6 +142,12 @@ VOID Dormir(){
 }
 
 /// <summary>
+/// Protege um processo, quando ele for finalizado, o sistema trava
+/// </summary>
+/// <param name="ProcessoPID"></param>
+VOID ProtegerProcesso(_In_ ULONG ProcessoPID);
+
+/// <summary>
 /// Lista todos os processos
 /// </summary>
 /// <returns></returns>
@@ -146,9 +156,9 @@ NTSTATUS ListarProcessos();
 /// <summary>
 /// Termina um processo
 /// </summary>
-/// <param name="ProcessID"></param>
+/// <param name="ProcessoPID"></param>
 /// <returns></returns>
-NTSTATUS TerminarProcesso(_In_ ULONG ProcessID);
+NTSTATUS TerminarProcesso(_In_ ULONG ProcessoPID);
 
 /// <summary>
 /// Oculta um processo
@@ -262,7 +272,7 @@ NTSTATUS DescarregarDriver(
 /// <param name="Io"></param>
 /// <param name="ObjetoArquivo"></param>
 /// <returns></returns>
-NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _In_ PIO_STATUS_BLOCK Io, _Out_ PFILE_OBJECT* ObjetoArquivo);
+NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _In_ PIO_STATUS_BLOCK Io, _Out_ PFILE_OBJECT* ObjetoArquivo, USHORT CompartilharAcesso);
 
 /// <summary>
 /// Deleta um arquivo por FILE_OBJECT
@@ -271,3 +281,28 @@ NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _
 /// <param name="ePasta"></param>
 /// <returns></returns>
 NTSTATUS DeletarObjetoArquivo(_Out_ PFILE_OBJECT ObjetoArquivo, _In_ BOOLEAN ePasta);
+
+/// <summary>
+/// Lista todos os drivers em execução
+/// </summary>
+VOID ListarDrivers();
+
+/// <summary>
+/// Lista todos os serviços instalados
+/// </summary>
+VOID ListarServicos();
+
+/// <summary>
+/// Verifica se é pra iniciar ou parar um serviço
+/// </summary>
+/// <param name="NomeServico"></param>
+/// <param name="Parar"></param>
+/// <returns></returns>
+NTSTATUS CarregarOuDescarregarServico(PUNICODE_STRING NomeServico, BOOLEAN Parar);
+
+/// <summary>
+/// Retorna o local do arquivo
+/// </summary>
+/// <param name="NomeServico"></param>
+/// <returns></returns>
+BOOLEAN LocalArquivo(PUNICODE_STRING NomeServico, PUNICODE_STRING RetornarValor);

@@ -55,5 +55,14 @@
     <ClInclude Include="filesIRP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="listdrivers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="deleteFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -47,13 +47,6 @@ typedef unsigned char       BYTE;
 // Incluição
 #include <stdlib.h>
 
-
-typedef NTSTATUS(*ZWSUSPENDPROCESS)
-(
-    IN ULONG ProcessHandle  // Alça para o processo
-    );
-ZWSUSPENDPROCESS ZwSuspendProcess;
-
 /// <summary>
 /// Lista todos os processos
 /// </summary>
@@ -127,23 +120,15 @@ NTSTATUS ListarProcessos()
     return Status;
 }
 
-typedef PETHREAD NTKERNELAPI(*PSGETNEXTPROCESSTHREAD)(PEPROCESS Process, PETHREAD Thread);
-
 /// <summary>
-/// Termina um processo
+/// Protege um processo, quando ele for finalizado, o sistema trava
 /// </summary>
-/// <param name="ProcessID"></param>
-/// <returns></returns>
-NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
+/// <param name="ProcessoPID"></param>
+VOID ProtegerProcesso(_In_ ULONG ProcessoPID)
 {
-    // Status
-    NTSTATUS Status = STATUS_SUCCESS;
-
-    // Alça do processo
+    // Objetos
     HANDLE AlcaProcesso;
     OBJECT_ATTRIBUTES Atributos;
-
-    PETHREAD Thread;
 
     // ID
     CLIENT_ID ClienteID;
@@ -152,7 +137,41 @@ NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
     InitializeObjectAttributes(&Atributos, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
 
     // Sete o valor
-    ClienteID.UniqueProcess = ProcessID;
+    ClienteID.UniqueProcess = ProcessoPID;
+    ClienteID.UniqueThread = 0;
+
+    // Abra o processo
+    NTSTATUS Status = ZwOpenProcess(&AlcaProcesso, PROCESS_ALL_ACCESS, &Atributos, &ClienteID);
+}
+
+PVOID PsGetProcessSectionBaseAddress(PEPROCESS Process);
+NTSTATUS MmUnmapViewOfSection(PEPROCESS Process, PVOID BaseAddress); // Used to unmap process's executable image
+
+/// <summary>
+/// Termina um processo
+/// </summary>
+/// <param name="ProcessoPID"></param>
+/// <returns></returns>
+NTSTATUS TerminarProcesso(_In_ ULONG ProcessoPID)
+{
+    PEPROCESS Processo;
+
+
+    // Status
+    NTSTATUS Status = STATUS_SUCCESS;
+
+    // Alça do processo
+    HANDLE AlcaProcesso;
+    OBJECT_ATTRIBUTES Atributos;
+
+    // ID
+    CLIENT_ID ClienteID;
+
+    // Inicie os atributos
+    InitializeObjectAttributes(&Atributos, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
+
+    // Sete o valor
+    ClienteID.UniqueProcess = ProcessoPID;
     ClienteID.UniqueThread = 0;
 
     // Abra o processo
@@ -161,7 +180,14 @@ NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
     // Se falhar
     if (!NT_SUCCESS(Status))
     {
-        return Status;
+        // Pegue o processo
+        Status = PsLookupProcessByProcessId(ProcessoPID, &Processo);
+
+        if (NT_SUCCESS(Status))
+        {
+            // Termine o processo usando MmUnmapViewOfSection
+            return MmUnmapViewOfSection(Processo, PsGetProcessSectionBaseAddress(Processo));
+        }
     }
 
     // Termine o processo
@@ -169,6 +195,19 @@ NTSTATUS TerminarProcesso(_In_ ULONG ProcessID)
 
     // Feche a alça
     ZwClose(AlcaProcesso);
+
+    // Se falhar
+    if (!NT_SUCCESS(Status))
+    {
+        // Pegue o processo
+        Status = PsLookupProcessByProcessId(ProcessoPID, &Processo);
+
+        if (NT_SUCCESS(Status))
+        {
+            // Termine o processo usando MmUnmapViewOfSection
+            Status = MmUnmapViewOfSection(Processo, PsGetProcessSectionBaseAddress(Processo));
+        }
+    }
 
     // Retorne
     return Status;

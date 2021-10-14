@@ -24,6 +24,8 @@ FLT_PREOP_CALLBACK_STATUS IrpMjCriado(
 	PFILE_OBJECT ObjetoArquivo = Data->Iopb->TargetFileObject;
 	NTSTATUS StatusRetornar = FLT_PREOP_SUCCESS_NO_CALLBACK;
 
+	return StatusRetornar;
+
 	// Valores
 	ULONG_PTR minimo;
 	ULONG_PTR maximo;
@@ -103,7 +105,10 @@ FLT_PREOP_CALLBACK_STATUS IrpMjCriado(
 			}
 		}
 
-		FltReleaseFileNameInformation(Informacao);
+		if (Informacao != NULL)
+		{
+			FltReleaseFileNameInformation(Informacao);
+		}
 	}
 
 	return StatusRetornar;

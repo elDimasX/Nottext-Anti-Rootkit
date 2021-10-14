@@ -1,6 +1,8 @@
 ﻿
 #include "filesIRP.h"
 
+
+
 /// <summary>
 /// Escreve em um arquivo
 /// </summary>
@@ -43,6 +45,9 @@ NTSTATUS EscreverNoArquivo(_In_ PUNICODE_STRING ArquivoParaEscrever, _In_ PUNICO
     // Inicie o UNICODE
     RtlInitUnicodeString(&ArquivoUnicode, ArquivoParaEscrever);
 
+    IO_STATUS_BLOCK Io;
+    PFILE_OBJECT ObjetoArquivo = NULL;
+
     // Inicie os atributos
     InitializeObjectAttributes(
         &Atributos,
@@ -79,54 +84,37 @@ NTSTATUS EscreverNoArquivo(_In_ PUNICODE_STRING ArquivoParaEscrever, _In_ PUNICO
     if (NT_SUCCESS(Status))
     {
         // Buffer
-        CHAR MensagemBuffer[BUFFER_SIZE];
-        size_t tb;
+        PUNICODE_STRING MensagemBuffer = (PUNICODE_STRING)ExAllocatePoolWithTag(PagedPool, 600, 'bffw');
 
-        // RtlStringCbPrintfW e RtlStringCbPrintfA é para garantir
-        // que eles não gravem além do final do buffer.
-        Status = RtlStringCbPrintfA(
-            MensagemBuffer,
-            sizeof(MensagemBuffer),
-            Mensagem,
-            0x0
-        );
-
-        // Se conseguir
-        if (NT_SUCCESS(Status))
+        if (MensagemBuffer)
         {
-            // Os RtlStringCbLengthW e RtlStringCbLengthA funções
-            // determinar o comprimento, em bytes, de uma cadeia fornecida. 
-            Status = RtlStringCbLengthA(
-                MensagemBuffer, // Buffer
-                sizeof(MensagemBuffer), // Tamanho dela
-                &tb // TB
+            // Copie para o Buffer
+            sprintf(MensagemBuffer,
+                "%s",
+                Mensagem
             );
 
-            // Se obter sucesso
-            if (NT_SUCCESS(Status))
-            {
-                // Escreva no arquivo
-                Status = ZwWriteFile(
-                    Alca,
-                    NULL,
-                    NULL,
-                    NULL,
+            // Escreva no arquivo
+            Status = ZwWriteFile(
+                Alca,
+                NULL,
+                NULL,
+                NULL,
 
-                    &ioSbp, // IO
+                &ioSbp, // IO
 
-                    // Buffer
-                    MensagemBuffer,
-                    tb,
-                    NULL,
-                    NULL
-                );
-            }
+                // Buffer
+                MensagemBuffer,
+                strlen(MensagemBuffer),
+                NULL,
+                NULL
+            );
+
+            // Terminamos, feche o arquivo
+            ZwClose(Alca);
+
+            ExFreePoolWithTag(MensagemBuffer, 'bffw');
         }
-
-        // Terminamos, feche o arquivo
-        Status = ZwClose(
-            Alca
-        );
     }
 
     // Terminamos de alertar, deixe outra operação pendente terminar
@@ -421,7 +409,6 @@ void MemFree(void* Buffer, const unsigned long tag)
         }
         __except (EXCEPTION_EXECUTE_HANDLER)
         {
-            DbgPrint("Invalid Memory\r\n");
         }
     }
 }
@@ -492,6 +479,9 @@ NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOL
         NULL
     );
 
+    PFILE_OBJECT PastaObjecto;
+    IO_STATUS_BLOCK IoBlc;
+
     // Abra a pasta
     Status = ZwOpenFile(
         &Alca,
@@ -558,12 +548,16 @@ NTSTATUS ListarPasta(_In_ PUNICODE_STRING Pasta, _In_ BOOLEAN Deletar, _In_ BOOL
 
         // Informação
         PastaInformacao = (FILE_BOTH_DIR_INFORMATION*)Buffer;
+        ULONG Contador = 0;
 
         // Itera por meio de dados coletados e nomes de exibição
         while (1)
         {
-            // Se for uma pasta, e não for um ponto
-            if ((PastaInformacao->FileName)[0] != L'.')
+            if (!_stricmp(PastaInformacao->FileName, "."))
+                Contador++;
+
+            // Se não tiver ponto, ou se os pontos foram removidos
+            if (Contador == 0 || Contador > 1)
             {
                 // Nome CHAR
                 UCHAR* NomeChar = MemAlloc(PastaInformacao->FileNameLength * sizeof(WCHAR), 'KIKE');
@@ -686,7 +680,7 @@ NTSTATUS CompletarAtributo(_In_ PDEVICE_OBJECT ObjetoDispositivo, _In_ PIRP Irp,
     // Se tiver o evento
     if (Irp->UserEvent)
         KeSetEvent(Irp->UserEvent, IO_NO_INCREMENT, 0);
-    
+
     // Se tiver um buffer
     if (Irp->MdlAddress)
     {
@@ -817,13 +811,11 @@ NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo, BOOLEAN ePasta)
             PFILE_OBJECT ObjetoArquivo = NULL;
 
             // Abra o arquivo em IRP
-            Status = AbrirArquivoIRP(UnArquivo, GENERIC_READ | DELETE, &Io, &ObjetoArquivo);
+            Status = AbrirArquivoIRP(UnArquivo, GENERIC_READ | GENERIC_WRITE | DELETE, &Io, &ObjetoArquivo, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE);
 
             // Se funcionar
             if (NT_SUCCESS(Status))
             {
-                DbgPrint("Aberto");
-
                 // Tire os atributos
                 IrpSetarAtributos(ObjetoArquivo);
 
@@ -835,57 +827,10 @@ NTSTATUS DeletarArquivo(_In_ PUNICODE_STRING Arquivo, BOOLEAN ePasta)
                 ObDereferenceObject(ObjetoArquivo);
             }
         }
-    } __except (EXCEPTION_EXECUTE_HANDLER){ }
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) {}
 
     RtlFreeUnicodeString(&UnArquivo);
 
     return Status;
 }
-
-/// <summary>
-/// Cria um arquivo
-/// </summary>
-/// <param name="Arquivo"></param>
-/// <returns></returns>
-NTSTATUS CriarArquivo(_In_ PUNICODE_STRING Arquivo)
-{
-    ANSI_STRING PastaAnsi;
-    UNICODE_STRING PastaUnicode;
-    OBJECT_ATTRIBUTES Atributos;
-    HANDLE Alca;
-    IO_STATUS_BLOCK IoStatusBlock;
-
-    // Inicie o ANSI e o UNICODE
-    RtlInitAnsiString(&PastaAnsi, Arquivo);
-    RtlAnsiStringToUnicodeString(&PastaUnicode, &PastaAnsi, TRUE);
-
-    InitializeObjectAttributes(&Atributos, &PastaUnicode, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-
-    // Cria o arquivo
-    NTSTATUS Status = ZwCreateFile(
-        &Alca,
-        GENERIC_WRITE | GENERIC_READ,
-        &Atributos,
-        &IoStatusBlock,
-        NULL,
-        FILE_ATTRIBUTE_NORMAL,
-        FILE_SHARE_READ,
-        FILE_CREATE,
-        FILE_NON_DIRECTORY_FILE,
-        NULL,
-        0
-    );
-
-    if (NT_SUCCESS(Status))
-    {
-        ZwClose(Alca);
-    }
-
-    if (PastaUnicode.Buffer != NULL)
-    {
-        RtlFreeUnicodeString(&PastaUnicode);
-    }
-
-    return Status;
-}
-

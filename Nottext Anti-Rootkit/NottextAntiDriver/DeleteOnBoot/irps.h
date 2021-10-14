@@ -57,10 +57,29 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 	}
 	else if (Io->Parameters.DeviceIoControl.IoControlCode == CRIAR_ARQUIVO)
 	{
-		if (NT_SUCCESS(CriarArquivo(MensagemUsuario)))
+		IO_STATUS_BLOCK IoP;
+		PFILE_OBJECT Ob;
+
+		// ANSI e STRING
+		UNICODE_STRING UnArquivo;
+		ANSI_STRING AsArquivo;
+
+		// Inicie
+		RtlInitAnsiString(&AsArquivo, MensagemUsuario);
+		RtlAnsiStringToUnicodeString(&UnArquivo, &AsArquivo, TRUE);
+		
+		// Crie o arquivo
+		if (NT_SUCCESS(AbrirArquivoIRP(UnArquivo, GENERIC_ALL, &IoP, &Ob, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_DELETE)))
 		{
+			// Se conseguir
 			StatusRetornar = "success!";
+
+			// Libere o arquivo
+			ObDereferenceObject(Ob);
 		}
+
+		if (UnArquivo.Buffer != NULL)
+			RtlFreeUnicodeString(&UnArquivo);
 	}
 	else if (Io->Parameters.DeviceIoControl.IoControlCode == LISTAR_PROCESSOS)
 	{
@@ -78,7 +97,7 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 		// Inicie os valores
 		RtlInitAnsiString(&As, MensagemUsuario);
 		RtlAnsiStringToUnicodeString(&Un, &As, TRUE);
-		
+
 		// Inicie o PID
 		ULONG Pid;
 		RtlUnicodeStringToInteger(&Un, 0, &Pid);
@@ -98,75 +117,58 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 		ANSI_STRING As;
 		UNICODE_STRING Un;
 
+		// Outro ANSI e UNICODE, usado para pegar o local do processo
+		ANSI_STRING AsArquivo;
+		UNICODE_STRING UnArquivo;
+
 		// Inicie os valores
 		RtlInitAnsiString(&As, MensagemUsuario);
 		RtlAnsiStringToUnicodeString(&Un, &As, TRUE);
 
 		// Inicie o PID
 		ULONG Pid;
+		
+		// Converta UNICODE para INT
 		RtlUnicodeStringToInteger(&Un, 0, &Pid);
 
 		PEPROCESS Processo = NULL;
 
-		// Obtenha o processo
+		// Obtenha o processo apartir do PID
 		PsLookupProcessByProcessId((HANDLE*)Pid, &Processo);
 
-		// Termine o processo
-		if (NT_SUCCESS(TerminarProcesso(Pid)))
+		// Arquivo completo
+		PVOID Arquivo = ExAllocatePoolWithTag(PagedPool, 800, 'KIC5');
+
+		// Se conseguir alocar espaço
+		if (Arquivo)
 		{
-			PEPROCESS Processo = NULL;
+			sprintf(
+				Arquivo,
+				"\\??\\%wZ",
 
-			// Obtenha o processo
-			PsLookupProcessByProcessId((HANDLE*)Pid, &Processo);
+				// Local do processo
+				(UNICODE_STRING*)LocalProcesso(Processo)
+			);
 
-			// Variaveis
-			ANSI_STRING AsArquivo;
-			UNICODE_STRING UnArquivo;
+			// Inicie o local do arquivo
+			RtlInitAnsiString(&AsArquivo, Arquivo);
+			RtlAnsiStringToUnicodeString(&UnArquivo, &AsArquivo, TRUE);
 
-			// Arquivo completo
-			PVOID Arquivo = ExAllocatePoolWithTag(PagedPool, 500, 'KIC5');
+			// Libere
+			ExFreePoolWithTag(Arquivo, 'KIC5');
 
-			if (Arquivo)
+			IO_STATUS_BLOCK IoSt;
+			PFILE_OBJECT ObjetoArquivo;
+
+			// Abra o arquivo, mas não compartilhe nenhum acesso
+			AbrirArquivoIRP(UnArquivo, GENERIC_READ | DELETE, &IoSt, &ObjetoArquivo, 0);
+
+			// Termine o processo
+			NTSTATUS Status = TerminarProcesso(Pid);
+
+			if (NT_SUCCESS(Status))
 			{
-				sprintf(
-					Arquivo,
-					"\\??\\%wZ",
-					(UNICODE_STRING*)LocalProcesso(Processo)
-				);
-
-				RtlInitAnsiString(&AsArquivo, Arquivo);
-				RtlAnsiStringToUnicodeString(&UnArquivo, &AsArquivo, TRUE);
-
-				// Libere
-				ExFreePoolWithTag(Arquivo, 'KIC5');
-
-				// Variaveis
-				OBJECT_ATTRIBUTES Atributos;
-				IO_STATUS_BLOCK Io;
-				HANDLE Alca;
-
-				InitializeObjectAttributes(&Atributos, &UnArquivo, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, NULL);
-
-				// Abra
-				NTSTATUS Status = ZwOpenFile(
-					&Alca,
-					GENERIC_READ,
-					&Atributos,
-					&Io,
-					0,
-					FILE_NON_DIRECTORY_FILE
-				);
-
-				if (NT_SUCCESS(Status))
-				{
-					StatusRetornar = "success!";
-				}
-
-				if (UnArquivo.Buffer != NULL)
-				{
-					// Libere o UNICODE
-					RtlFreeUnicodeString(&UnArquivo);
-				}
+				StatusRetornar = "success!";
 			}
 		}
 
@@ -174,6 +176,12 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 		{
 			// Libere o UNICODE
 			RtlFreeUnicodeString(&Un);
+		}
+
+		if (UnArquivo.Buffer != NULL)
+		{
+			// Libere o UNICODE
+			RtlFreeUnicodeString(&UnArquivo);
 		}
 	}
 	// Deletar uma pasta
@@ -224,11 +232,75 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 	// Se for para renomear
 	else if (Io->Parameters.DeviceIoControl.IoControlCode == RENOMEAR_ARQUIVO)
 	{
-		// Se renomear
 		if (NT_SUCCESS(RenomearArquivo(MensagemUsuario)))
 		{
 			StatusRetornar = "success!";
 		}
+		/**
+		// ANSI_STRING e UNICODE
+		ANSI_STRING As;
+		UNICODE_STRING Un;
+
+		// AS e UNICODE para o novo nome
+		ANSI_STRING AsNovo;
+		UNICODE_STRING UnNovo;
+
+		// Inicie os valores, o nome antigo
+		RtlInitAnsiString(&As, NomeBackupCopiar);
+		RtlAnsiStringToUnicodeString(&Un, &As, TRUE);
+
+		// Inicie os valores, o novo nome
+		RtlInitAnsiString(&AsNovo, MensagemUsuario);
+		RtlAnsiStringToUnicodeString(&UnNovo, &AsNovo, TRUE);
+
+		// Objeto do arquivo
+		PFILE_OBJECT Objeto = NULL;
+		IO_STATUS_BLOCK IoB;
+
+		// Abra o arquivo
+		NTSTATUS Status = AbrirArquivoIRP(Un, FILE_ALL_ACCESS, &IoB, &Objeto, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE);
+
+		// Se conseguir
+		if (NT_SUCCESS(Status))
+		{
+			// Aloque espaço
+			PFILE_RENAME_INFORMATION Renomear = NULL;
+			Renomear = (PFILE_RENAME_INFORMATION)ExAllocatePoolWithTag(PagedPool, sizeof(FILE_RENAME_INFORMATION) + UnNovo.MaximumLength, 'file');
+
+			// Se conseguir alocar espaço
+			if (Renomear)
+			{
+				// Zerar o buffer
+				RtlZeroMemory(Renomear, sizeof(Renomear));
+				Renomear->FileNameLength = UnNovo.Length;
+
+				// Copie
+				wcscpy(Renomear->FileName, UnNovo.Buffer);
+				Renomear->ReplaceIfExists = TRUE;
+				Renomear->RootDirectory = NULL;
+
+				// Renomeie
+				if (NT_SUCCESS(irpSetFileAttributes(Objeto, &IoB, Renomear, sizeof(FILE_RENAME_INFORMATION) + UnNovo.MaximumLength, FileRenameInformation, TRUE)))
+				{
+					StatusRetornar = "sucsess!";
+				}
+
+				// Libere o FILE_RENAME_INFORMATION
+				ExFreePoolWithTag(Renomear, 'file');
+			}
+
+			// Libere o arquivo
+			ObDereferenceObject(Objeto);
+		}
+
+		// Se não estiver vazio
+		if (Un.Buffer != NULL)
+			RtlFreeUnicodeString(&Un);
+
+		// Vazio
+		if (UnNovo.Buffer != NULL)
+			RtlFreeUnicodeString(&UnNovo);
+		*/
 	}
 	// Se for para esconder um processo
 	else if (Io->Parameters.DeviceIoControl.IoControlCode == OCULTAR_PROCESSO)
@@ -268,6 +340,94 @@ NTSTATUS IRPRecebido(_In_ PDEVICE_OBJECT DeviceObject, _In_ PIRP Irp)
 	{
 		// Reinicie o PC
 		DesligarOuReiniciarPC(FALSE);
+	}
+	// Se for para proteger um processo
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == PROTEGER_PROCESSO)
+	{
+		// ANSI_STRING e UNICODE
+		ANSI_STRING As;
+		UNICODE_STRING Un;
+
+		// Inicie os valores
+		RtlInitAnsiString(&As, MensagemUsuario);
+		RtlAnsiStringToUnicodeString(&Un, &As, TRUE);
+
+		// Se conseguir
+		if (Un.Buffer != NULL)
+		{
+			// Inicie o PID
+			ULONG Pid;
+			RtlUnicodeStringToInteger(&Un, 0, &Pid);
+
+			// Tente
+			__try {
+
+				// Protega o processo
+				ProtegerProcesso(Pid);
+				StatusRetornar = "success!";
+
+			} __except (EXCEPTION_EXECUTE_HANDLER){}
+
+			// Libere o UNICODE
+			RtlFreeUnicodeString(&Un);
+		}
+	}
+	// Se for para proteger um arquivo contra exclusão ou escrita
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == PROTEGER_ARQUIVO)
+	{
+		// ANSI_STRING e UNICODE
+		ANSI_STRING As;
+		UNICODE_STRING Un;
+
+		// Inicie os valores
+		RtlInitAnsiString(&As, MensagemUsuario);
+		RtlAnsiStringToUnicodeString(&Un, &As, TRUE);
+
+		// Se conseguir
+		if (Un.Buffer != NULL)
+		{
+			IO_STATUS_BLOCK IoSt;
+			PFILE_OBJECT ObjetoArquivo = NULL;
+
+			// Se abrir o arquivo
+			NTSTATUS Status = AbrirArquivoIRP(Un, GENERIC_READ | DELETE, &IoSt, &ObjetoArquivo, FILE_SHARE_READ);
+
+			if (NT_SUCCESS(Status))
+			{
+				StatusRetornar = "success!";
+			}
+
+			// Libere o UNICODE
+			RtlFreeUnicodeString(&Un);
+		}
+	}
+	// Se for para listar os drivers
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == LISTAR_DRIVERS)
+	{
+		ListarDrivers();
+		StatusRetornar = "success!";
+	}
+	// Descarrega um serviço
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == DESCARREGAR_SERVICO)
+	{
+		if (NT_SUCCESS(CarregarOuDescarregarServico(MensagemUsuario, TRUE)))
+		{
+			StatusRetornar = "success!";
+		}
+	}
+	// Se for para listar os serviços
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == LISTAR_SERVICOS)
+	{
+		ListarServicos();
+		StatusRetornar = "success!";
+	}
+	// Carrega um serviço
+	else if (Io->Parameters.DeviceIoControl.IoControlCode == CARREGAR_SERVICO)
+	{
+		if (NT_SUCCESS(CarregarOuDescarregarServico(MensagemUsuario, FALSE)))
+		{
+			StatusRetornar = "success!";
+		}
 	}
 
 	// Máximo copiar para enviar ao user-mode

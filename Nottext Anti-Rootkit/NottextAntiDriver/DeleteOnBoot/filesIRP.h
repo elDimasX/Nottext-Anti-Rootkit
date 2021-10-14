@@ -1,4 +1,5 @@
 ﻿
+
 #define MAX_PATH          600 
 /// https://bbs.pediy.com/thread-264070.htm
 /// https://titanwolf.org/Network/Articles/Article?AID=4520fea9-1486-4905-8dfc-5bbb14fd5db3#gsc.tab=0
@@ -186,7 +187,7 @@ NTSTATUS ObterDriverDispositivo(_In_ PUNICODE_STRING NomeDriver, _Out_ PDEVICE_O
 /// <param name="Io"></param>
 /// <param name="ObjetoArquivo"></param>
 /// <returns></returns>
-NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _In_ PIO_STATUS_BLOCK Io, _Out_ PFILE_OBJECT* ObjetoArquivo)
+NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _In_ PIO_STATUS_BLOCK Io, _Out_ PFILE_OBJECT* ObjetoArquivo, USHORT CompartilharAcesso)
 {
 	// Status
 	NTSTATUS Status;
@@ -335,6 +336,7 @@ NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _
 	Irp->MdlAddress = NULL;
 	Irp->AssociatedIrp.SystemBuffer = NULL;
 	Irp->Flags = IRP_CREATE_OPERATION | IRP_SYNCHRONOUS_API;
+	
 	Irp->RequestorMode = KernelMode;
 	Irp->UserIosb = Io;
 	Irp->UserEvent = &Evento;
@@ -351,9 +353,11 @@ NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _
 	IrpSp->DeviceObject = ObjetoDispositivo;
 	IrpSp->FileObject = NovoObjetoArquivo;
 	IrpSp->Parameters.Create.SecurityContext = &SecurityContext;
-	IrpSp->Parameters.Create.Options = (FILE_OPEN_IF << 24) | 0;
+	IrpSp->Parameters.Create.Options = (FILE_OPEN_IF << 24) | FILE_SYNCHRONOUS_IO_NONALERT;
 	IrpSp->Parameters.Create.FileAttributes = FILE_ATTRIBUTE_NORMAL;
-	IrpSp->Parameters.Create.ShareAccess = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+
+	IrpSp->Parameters.Create.ShareAccess = CompartilharAcesso;
+
 	IrpSp->Parameters.Create.EaLength = 0;
 
 	// Complete o IRP
@@ -398,745 +402,64 @@ NTSTATUS AbrirArquivoIRP(_In_ UNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _
 	return Status;
 }
 
-/// <summary>
-/// Deleta um arquivo por FILE_OBJECT
-/// </summary>
-/// <param name="ObjetoArquivo"></param>
-/// <param name="ePasta"></param>
-/// <returns></returns>
-NTSTATUS DeletarObjetoArquivo(_Out_ PFILE_OBJECT ObjetoArquivo, _In_ BOOLEAN ePasta)
+NTSTATUS irpSetFileAttributes(PFILE_OBJECT pFileObject, PIO_STATUS_BLOCK pIoStatusBlock, PVOID pFileInformation, ULONG FileInformationLength, FILE_INFORMATION_CLASS FileInformationClass, BOOLEAN ReplaceIfExists)
 {
-	PDEVICE_OBJECT ObjetoDispositivo, ObjetoBase;
+
+	//define variable
+	NTSTATUS ntStatus = STATUS_SUCCESS;
+	PDEVICE_OBJECT DeviceObject;
 	PIRP Irp;
-	KEVENT Evento;
-	FILE_DISPOSITION_INFORMATION Informacao;
+	KEVENT SycEvent;
 	IO_STATUS_BLOCK ioStatus;
 	PIO_STACK_LOCATION irpSp;
-	PSECTION_OBJECT_POINTERS ObjetoPonteiro;
 
-	ObjetoDispositivo = IoGetRelatedDeviceObject(ObjetoArquivo);
+	//Parameter validation
+	if (pFileObject == NULL || pIoStatusBlock == NULL || pFileInformation == NULL || FileInformationLength <= 0) return STATUS_INVALID_PARAMETER;
 
-	// Obtenha a base
-	ObjetoBase = IoGetDeviceAttachmentBaseRef(ObjetoDispositivo);
+	//Get the original device object
+	DeviceObject = IoGetRelatedDeviceObject(pFileObject);
+	if (DeviceObject == NULL || DeviceObject->StackSize <= 0) return STATUS_UNSUCCESSFUL;
 
-	// Aloque o IRP
-	Irp = IoAllocateIrp(ObjetoBase->StackSize, TRUE);
-
-	// Se falhar
-	if (Irp == NULL) {
-		return STATUS_UNSUCCESSFUL;
+	//Create IRP   
+	Irp = IoAllocateIrp(DeviceObject->StackSize, TRUE);
+	if (Irp == NULL)
+	{
+		//ObDereferenceObject (pFileObject);
+		return FALSE;
 	}
 
-	// Inicie o evento
-	KeInitializeEvent(&Evento, SynchronizationEvent, FALSE);
+	//Initialize the synchronization event object   
+	KeInitializeEvent(&SycEvent, SynchronizationEvent, FALSE);
 
-	// Delete
-	Informacao.DeleteFile = TRUE;
-
-	// IRP
-	Irp->AssociatedIrp.SystemBuffer = &Informacao;
-	Irp->UserEvent = &Evento;
+	//Initialize IRP   
+	Irp->AssociatedIrp.SystemBuffer = pFileInformation;//Set properties
+	Irp->Flags |= IRP_BUFFERED_IO;
+	Irp->UserEvent = &SycEvent;
 	Irp->UserIosb = &ioStatus;
-	Irp->Tail.Overlay.OriginalFileObject = ObjetoArquivo;
+	Irp->Tail.Overlay.OriginalFileObject = pFileObject;
 	Irp->Tail.Overlay.Thread = (PETHREAD)KeGetCurrentThread();
 	Irp->RequestorMode = KernelMode;
 
-	// Configure
+	//Set IRP stack information   
 	irpSp = IoGetNextIrpStackLocation(Irp);
 	irpSp->MajorFunction = IRP_MJ_SET_INFORMATION;
-	irpSp->DeviceObject = ObjetoBase;
-	irpSp->FileObject = ObjetoArquivo;
-	irpSp->Parameters.SetFile.Length = sizeof(FILE_DISPOSITION_INFORMATION);
-	irpSp->Parameters.SetFile.FileInformationClass = FileDispositionInformation;
-	irpSp->Parameters.SetFile.FileObject = ObjetoArquivo;
+	irpSp->DeviceObject = DeviceObject;
+	irpSp->FileObject = pFileObject;
+	irpSp->Parameters.SetFile.ReplaceIfExists = ReplaceIfExists;//Whether to replace	
+	irpSp->Parameters.SetFile.Length = FileInformationLength;//Length
+	irpSp->Parameters.SetFile.FileInformationClass = FileInformationClass;//type
+	irpSp->Parameters.SetFile.FileObject = pFileObject;
 
-	// Complete a rotina
-	IoSetCompletionRoutine(
-		Irp,
-		CompletarAtributo,
-		&Evento,
-		TRUE,
-		TRUE,
-		TRUE);
 
-	// Se não for pasta
-	if (ePasta == FALSE)
-	{
-		// Nenhum processo
-		ObjetoArquivo->SectionObjectPointer->ImageSectionObject = 0;
-		ObjetoArquivo->DeleteAccess = 1;
+	IoSetCompletionRoutine(Irp, CompletarAtributo, NULL, TRUE, TRUE, TRUE);
+	ntStatus = IoCallDriver(DeviceObject, Irp);
+	if (ntStatus == STATUS_PENDING)
+		KeWaitForSingleObject(&SycEvent, Executive, KernelMode, TRUE, NULL);
 
-		// Limpe as sesões
-		ObjetoPonteiro = ObjetoArquivo->SectionObjectPointer;
-		ObjetoPonteiro->ImageSectionObject = 0;
-		ObjetoPonteiro->DataSectionObject = 0;
+	//ObDereferenceObject (pFileObject);
+	return ntStatus;
 
-		// A MmFlushImageSection libera a seção da imagem para um arquivo. 
-		CONST BOOLEAN ImageSectionFlushed = MmFlushImageSection(
-			ObjetoPonteiro,
-			MmFlushForDelete //  O arquivo está sendo excluído. 
-		);
-	}
-
-	// Chame o IRP
-	NTSTATUS Status = IoCallDriver(ObjetoBase, Irp);
-
-	// Espere
-	KeWaitForSingleObject(&Evento, Executive, KernelMode, TRUE, NULL);
-
-	return Status;
 }
 
-/// <summary>
-/// Cria um arquivo com IRP
-/// </summary>
-/// <param name="Arquivo"></param>
-/// <param name="Acesso"></param>
-/// <returns></returns>
-NTSTATUS CriarArquivoIRP(_In_ PUNICODE_STRING Arquivo, _In_ ACCESS_MASK Acesso, _In_ PIO_STATUS_BLOCK Io, _In_ PFILE_OBJECT* ObjetoArquvo)
-{
-	// Status
-	NTSTATUS Status;
-	PIRP Irp;
-
-	// Variáveis
-	KEVENT Evento;
-	ACCESS_STATE EstadoAcesso;
-	AUX_ACCESS_DATA AuxData;
-	OBJECT_ATTRIBUTES Atributos;
-	PFILE_OBJECT NovoObjetoArquivo;
-
-	IO_SECURITY_CONTEXT ContextoSeguranca;
-	PIO_STACK_LOCATION IrpSp;
-	PDEVICE_OBJECT DispositivoObjeto;
-	PDEVICE_OBJECT DispositivoLer;
-
-	UNICODE_STRING NomeDriver;
-	wchar_t* NomeArquivoBuf = NULL;
-	wchar_t LocalArquivo[MAX_PATH];
-
-	// Se algo estiver errado
-	if (Arquivo == NULL || Io == NULL || ObjetoArquvo == NULL || Arquivo->Length <= SYMBOLICLINKLENG)
-	{
-		return STATUS_INVALID_PARAMETER;
-	}
-
-	// Zere
-	RtlZeroMemory(LocalArquivo, sizeof(LocalArquivo));
-
-	// Copie o Arquivo->Buffer para o LocalArquivo, com limite de 7 * sizeof(wchar_t)
-	RtlCopyMemory(LocalArquivo, Arquivo->Buffer, (SYMBOLICLINKLENG + 1) * sizeof(wchar_t));
-
-	// Inicie o UNICODE com o LocalArquivo
-	RtlInitUnicodeString(&NomeDriver, LocalArquivo);
-
-	// Obtenha o dispositivo (se é o C:\\ ou outro driver)
-	Status = ObterDriverDispositivo(&NomeDriver, &DispositivoObjeto, &DispositivoLer);
-
-	if (!NT_SUCCESS(Status))
-	{
-		return Status;
-	}
-}
-
-/*
-
-
-
-
-
-
-*/
-/// <summary>
-/// Deleta o arquivo, enviando um IRP direto para drivers de baixo nível
-/// Um nível mais simples de remoção
-/// </summary>
-NTSTATUS DeletarArquivoNormal(_In_ UNICODE_STRING ArquivoUnicode)
-{
-	// Atributos
-	OBJECT_ATTRIBUTES Atributos;
-
-	// Objeto
-	PFILE_OBJECT ObjetoArquivo = NULL;
-
-	// Dispositivo
-	PDEVICE_OBJECT ObjetoDispositivo;
-
-	// Alca
-	HANDLE Alca = NULL;
-
-	// Status
-	NTSTATUS Status;
-
-	// IRP
-	PIRP Irp;
-
-	// CurrentLocation
-	PIO_STACK_LOCATION CurrentLocation;
-
-	// Evento
-	KEVENT Evento;
-	IO_STATUS_BLOCK	IoBlock;
-
-	// Valor desconhecido
-	ULONG ValorDesconhecido = 1;
-
-	// Inicie os atributos
-	InitializeObjectAttributes(
-		&Atributos,
-		&ArquivoUnicode,
-		OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
-		NULL,
-		NULL
-	);
-
-	/*
-
-		A IoCreateFileSpecifyDeviceObjectHint rotina é usada por drivers de filtro do
-		sistema de arquivos para enviar uma solicitação de criação apenas para os
-		filtros abaixo de um objeto de dispositivo especificado e para o sistema de arquivos.
-
-	*/
-
-	Status = IoCreateFileSpecifyDeviceObjectHint(
-
-		// Salve a alça aqui, para fechar o arquivo depois
-		&Alca,
-
-		// Permissões que vamos usar ao abrir o arquivo
-		GENERIC_READ | GENERIC_WRITE,
-
-		// Os atributos que inicializamos
-		&Atributos,
-		&IoBlock,
-		NULL,
-
-		// Normal
-		FILE_ATTRIBUTE_NORMAL,
-
-		// Compartilhe as permissões de deletar
-		FILE_SHARE_DELETE,
-
-		// Não é uma pasta
-		FILE_OPEN,
-		FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT,
-		NULL,
-		NULL,
-
-		// Não sei pra que serve
-		CreateFileTypeNone,
-		NULL,
-
-		// Ignore os atributos
-		IO_IGNORE_SHARE_ACCESS_CHECK | IO_IGNORE_READONLY_ATTRIBUTE,
-		NULL
-	);
-
-	// Se falhar ao abrir o arquivo
-	if (!NT_SUCCESS(Status))
-	{
-		// Tenta abrir o arquivo com permissão de leitura
-		Status = ZwOpenFile(
-			&Alca,
-			GENERIC_READ,
-			&Atributos,
-			&IoBlock,
-			FILE_SHARE_VALID_FLAGS,
-			FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE
-		);
-
-		// Se falhar
-		if (!NT_SUCCESS(Status))
-		{
-			// Tenta abrir o arquivo com permissão de leitura
-			Status = IoCreateFileSpecifyDeviceObjectHint(
-				&Alca,
-				FILE_LIST_DIRECTORY,
-				&Atributos,
-				&IoBlock,
-				NULL,
-				FILE_ATTRIBUTE_NORMAL,
-				0,
-				FILE_OPEN,
-				FILE_DIRECTORY_FILE,
-				NULL,
-				NULL,
-				CreateFileTypeNone,
-				NULL,
-				IO_IGNORE_SHARE_ACCESS_CHECK | IO_IGNORE_READONLY_ATTRIBUTE,
-				NULL
-			);
-
-			// Se conseguir
-			if (NT_SUCCESS(Status))
-			{
-				//ZwClose(FileHandle);
-				ZwDeleteFile(&Atributos);
-				goto exit;
-			}
-
-			// Saia
-			goto exit;
-		}
-	}
-
-	// Obtenha o objeto do arquivo
-	Status = ObReferenceObjectByHandle(
-
-		// Indentificador do arquivo (alça)
-		Alca,
-
-		// Deletar
-		DELETE,
-		*IoFileObjectType,
-		0,
-
-		// Object
-		(PVOID*)&ObjetoArquivo,
-		0
-	);
-
-	// Se falhar
-	if (!NT_SUCCESS(Status))
-	{
-		//DbgPrint("Falha ao obter o objeto do arquivo: %x\n", Status);
-
-		// Saia
-		goto exit;
-	}
-
-	// Altere o valor para permitir deletar arquivos em uso
-	ObjetoArquivo->SectionObjectPointer->ImageSectionObject = 0;
-
-	// Acesso de deletar
-	ObjetoArquivo->DeleteAccess = 1;
-
-	// Acesso de escrita
-	ObjetoArquivo->WriteAccess = 1;
-
-	// Obtenha o objeto de dispositivo
-	ObjetoDispositivo = IoGetBaseFileSystemDeviceObject(ObjetoArquivo);
-
-	// Se falhar
-	if (ObjetoDispositivo == NULL)
-	{
-		// Saia
-		goto exit;
-	}
-
-	// A IoAllocateIrp rotina não associa o IRP a um thread.
-	// O driver de alocação deve liberar o IRP em vez de completá-lo de volta
-	// para o gerenciador de E / S. 
-	Irp = IoAllocateIrp(ObjetoDispositivo->StackSize, 1);
-
-	// Se falhar
-	if (Irp == NULL)
-	{
-		// Saia
-		goto exit;
-	}
-
-	// Inicia o evento
-	KeInitializeEvent(&Evento, SynchronizationEvent, 0);
-
-	// Altere os valores de IRP
-	// Ponteiro para um buffer de espaço do sistema. 
-	Irp->AssociatedIrp.SystemBuffer = &ValorDesconhecido;
-	Irp->UserEvent = &Evento;
-	Irp->UserIosb = &IoBlock;
-	Irp->Tail.Overlay.OriginalFileObject = ObjetoArquivo;
-	Irp->Tail.Overlay.Thread = KeGetCurrentThread();
-
-	// CurrentLocation
-	CurrentLocation = Irp->Tail.Overlay.CurrentStackLocation;
-
-	// Request de KernelMode
-	Irp->RequestorMode = KernelMode;
-	--CurrentLocation;
-
-	// Alte os valores
-	CurrentLocation->MajorFunction = IRP_MJ_SET_INFORMATION;
-	CurrentLocation->DeviceObject = ObjetoDispositivo;
-	CurrentLocation->FileObject = ObjetoArquivo;
-	CurrentLocation->Parameters.SetFile.FileInformationClass = FileDispositionInformation;
-	CurrentLocation->Parameters.SetFile.FileObject = ObjetoArquivo;
-	CurrentLocation->Parameters.SetFile.Length = sizeof(FILE_DISPOSITION_INFORMATION);
-
-	// Complete a função
-	CurrentLocation->CompletionRoutine = CompletarAtributo;
-	CurrentLocation->Context = &Evento;
-	CurrentLocation->Control = 0xE0;
-
-	// A IoCallDriver rotina envolve IofCallDriver que envia um IRP ao driver
-	// associado a um objeto de dispositivo especificado.
-	// Para obter mais informações, consulte IofCallDriver. 
-	Status = IoCallDriver(ObjetoDispositivo, Irp);
-
-	// Se falhar
-	if (!NT_SUCCESS(Status))
-	{
-		// Saia
-		goto exit;
-	}
-
-	// Espera a operação
-	KeWaitForSingleObject(&Evento, 0, KernelMode, FALSE, NULL);
-
-	// Status
-	//KdPrint(("Irp.status is %x\n", Irp->IoStatus.Status));
-
-	// Saia
-	goto exit;
-
-	// Função que sai
-exit:
-
-	// Se o FileObject foi usado
-	if (ObjetoArquivo != NULL)
-	{
-		// Libere-o
-		ObfDereferenceObject(ObjetoArquivo);
-	}
-
-	// Se o arquivo estiver aberto
-	if (Alca != NULL)
-	{
-		// Feche-o
-		ZwClose(Alca);
-	}
-
-	// Retorne o status
-	return Status;
-}
-
-/// <summary>
-/// Lê uma linha
-/// </summary>
-/// <param name="Tamanho"></param>
-/// <param name="Linha"></param>
-VOID LerLinha(
-	SIZE_T Tamanho,
-	PCSTR Linha
-)
-{
-	__try {
-
-		CHAR Arquivo[720] = { 0 };
-
-		// Mova o valor
-		RtlMoveMemory(Arquivo, Linha, Tamanho);
-
-		// Se falhar ao deletar no modo arquivo
-		if (ListarPasta(Arquivo, TRUE, TRUE) != STATUS_SUCCESS)
-		{
-			// Delete
-			DeletarArquivo(Arquivo, FALSE);
-		}
-
-		RtlZeroMemory(Arquivo, sizeof(CHAR));
-
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER) {
-	}
-}
-
-/// <summary>
-/// Acha linhas em um texto
-/// </summary>
-/// <param name="tb"></param>
-/// <param name="sz"></param>
-/// <returns></returns>
-PCSTR ProcurarLinha(
-	SIZE_T tb,
-	PCSTR sz
-)
-{
-	// Se for menor de 2
-	if (tb < 2)
-	{
-		return 0;
-	}
-
-	tb--;
-
-	do
-	{
-		if (*sz++ == '\r')
-		{
-			if (*sz == '\n')
-			{
-				// Retorne a string - 1
-				return sz - 1;
-			}
-		}
-	} while (--tb);
-
-	// Retorne falso
-	return 0;
-}
-
-/// <summary>
-/// Obtem as informações corretas para encontrar as linhas
-/// </summary>
-/// <param name="buf"></param>
-/// <param name="tb"></param>
-/// <returns></returns>
-NTSTATUS ProcessarArquivo(PCSTR buf, SIZE_T tb)
-{
-	// Junte tudo
-	PCSTR Final = buf + tb, linha = buf;
-
-	// While, para encontrar todas as linhas
-	while (buf = ProcurarLinha(Final - linha, linha))
-	{
-		// Leia a linha
-		LerLinha(buf - linha, linha);
-
-		// Vamos configurar a linha
-		linha = buf + 2;
-	}
-
-	// Se a linha for diferente do final
-	if (linha != Final)
-	{
-		// Leia a linha
-		LerLinha(
-			Final - linha, // Tamanho do buffer
-			linha // Linha
-		);
-	}
-
-	// Terminamos
-	return 0;
-}
-
-/// <summary>
-/// Processa um arquivo, para que seja possível ler o texto dele sem retornar lixo
-/// </summary>
-/// <param name="Atributos"></param>
-/// <returns></returns>
-NTSTATUS ProcessarInformacoesArquivo(POBJECT_ATTRIBUTES Atributos)
-{
-	// Alça
-	HANDLE Alca, Sessao = 0;
-
-	// Status de bloqueio
-	IO_STATUS_BLOCK iosb;
-
-	// Abra o arquivo
-	NTSTATUS Status = ZwOpenFile(&Alca, FILE_GENERIC_READ, Atributos, &iosb, FILE_SHARE_VALID_FLAGS | FILE_SHARE_DELETE, FILE_SYNCHRONOUS_IO_NONALERT);
-
-	// Se conseguir abrir o arquivo
-	if (NT_SUCCESS(Status))
-	{
-		// Informações do arquivo
-		FILE_STANDARD_INFORMATION Informacao;
-
-		// Obtenha as informações do arquivo
-		Status = ZwQueryInformationFile(Alca, &iosb, &Informacao, sizeof(Informacao), FileStandardInformation);
-
-		// Se conseguir
-		if (NT_SUCCESS(Status))
-		{
-			// Se o final do arquvio for muito grande
-			if (Informacao.EndOfFile.HighPart)
-			{
-				Status = STATUS_FILE_TOO_LARGE;
-			}
-
-			// Se não
-			else if (!Informacao.EndOfFile.LowPart)
-			{
-				Status = STATUS_MAPPED_FILE_SIZE_ZERO;
-			}
-
-			// Se tudo ocorrer ok
-			else
-			{
-				// Crie uma sessão
-				Status = ZwCreateSection(
-					&Sessao,
-
-					// Mapeie para leitura
-					SECTION_MAP_READ,
-					0,
-					0,
-
-					// Somente leitura
-					PAGE_READONLY,
-
-					// Commit
-					SEC_COMMIT,
-					Alca
-				);
-			}
-		}
-
-		// Se conseguir
-		if (NT_SUCCESS(Status))
-		{
-			// Informações
-			PVOID EnderecoBase = 0;
-			SIZE_T VerTamanho = 0;
-
-			// Mapeie a sessão
-			Status = ZwMapViewOfSection(
-				// Sessão
-				Sessao,
-
-				// Processo atual
-				ZwCurrentProcess(),
-
-				// Endereço
-				&EnderecoBase,
-				0,
-				0,
-				0,
-
-				// Tamanho
-				&VerTamanho,
-				ViewUnmap,
-				0,
-
-				// Somente leitura
-				PAGE_READONLY
-			);
-
-			// Feche a sessão
-			ZwClose(Sessao);
-
-			// Se obter sucesso
-			if (NT_SUCCESS(Status))
-			{
-				// Processe o arquivo novamente, até falhar ou terminar
-				Status = ProcessarInformacoesArquivo((PCSTR)EnderecoBase, Informacao.EndOfFile.LowPart);
-
-				// Desmapeie o arquivo
-				ZwUnmapViewOfSection(ZwCurrentProcess(), EnderecoBase);
-			}
-		}
-
-		// Se a alça ainda estiver aberta
-		if (Alca != NULL)
-		{
-			ZwClose(Alca);
-		}
-	}
-
-	// Retorne o status
-	return Status;
-}
-
-/// <summary>
-/// Deleta arquivos durante a inicialização do BOOT
-/// </summary>
-/// <returns></returns>
-NTSTATUS DeletarNoBoot()
-{
-	// Váriaveis
-	HANDLE Alca;
-	OBJECT_ATTRIBUTES Atributos;
-	IO_STATUS_BLOCK IoR;
-	IO_STATUS_BLOCK Io;
-
-	UNICODE_STRING UnArquivo;
-	RtlInitUnicodeString(&UnArquivo, L"\\??\\C:\\ProgramData\\NtAnti-Rootkit\\deleteOnBoot.txt");
-
-	// Inicie o atributo
-	InitializeObjectAttributes(&Atributos, &UnArquivo, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-
-	// Abra o arquivo
-	NTSTATUS Status = STATUS_SUCCESS;
-
-	PUCHAR buffer = NULL;
-	ULONG Tamanho = 4096;
-	LARGE_INTEGER Offset = { 0 };
-
-	// PagedPool = memória do kernel e do driver de dispositivo que PODE transbordar da memória física para o arquivo de página lento 
-	// NonPagedPool = Pool não paginado é a quantidade de memória do kernel e do driver de dispositivo que deve permanecer na memória física.
-	buffer = (PUCHAR)ExAllocatePoolWithTag(PagedPool, Tamanho, 'file');
-
-	// Se conseguir
-	if (buffer)
-	{
-		// Abra o arquivo
-		Status = ZwOpenFile(
-			&Alca,
-			GENERIC_READ,
-			&Atributos,
-			&IoR,
-			FILE_SHARE_READ,
-			FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT
-		);
-
-		if (NT_SUCCESS(Status))
-		{
-			ProcessarInformacoesArquivo(&Atributos);
-
-			// Repetição infinita
-			while (1)
-			{
-				// Zere o tamanho do buffer
-				// Tamanho
-				Tamanho = 4096;
-
-				// Leia o arquivo original, que vamos copiar
-				Status = ZwReadFile(Alca, NULL, NULL, NULL, &Io, buffer, Tamanho, &Offset, NULL);
-
-				// Se falhar
-				if (!NT_SUCCESS(Status))
-				{
-					// Se for o fim do arquivo
-					if (Status == STATUS_END_OF_FILE)
-					{
-						Status = STATUS_SUCCESS;
-						break;
-					}
-					else
-					{
-						// Saia
-						break;
-					}
-				}
-
-				// Tamanhho
-				Tamanho = Io.Information;
-				Offset.QuadPart += Tamanho;
-
-				size_t tb;
-
-				// Vamos converter o BUFFER
-				Status = RtlStringCbLengthA(
-					buffer, // Buffer
-					wcslen(buffer) * sizeof(PUCHAR), // Tamanho do buffer
-					&tb // Vamos usar aqui
-				);
-
-				if (NT_SUCCESS(Status))
-				{
-					// Processe o arquivo
-					ProcessarArquivo(buffer, tb);
-				}
-			}
-		}
-	}
-
-	goto sair;
-
-sair:
-
-	if (buffer != NULL)
-	{
-		ExFreePoolWithTag(buffer, 'file');
-	}
-
-
-	if (Alca != NULL)
-	{
-		ZwClose(Alca);
-		ZwDeleteFile(&Atributos);
-	}
-
-	return Status;
-}
+#include "deleteFile.h"
 

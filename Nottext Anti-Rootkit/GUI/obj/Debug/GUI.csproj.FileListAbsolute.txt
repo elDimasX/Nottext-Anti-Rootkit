@@ -19,5 +19,4 @@ C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext An
 C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\GUI\bin\Debug\Nottext Anti-Rootkit.pdb
 C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\GUI\obj\Debug\Nottext Anti-Rootkit.exe
 C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\GUI\obj\Debug\Nottext Anti-Rootkit.pdb
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\GUI\obj\Debug\GUI.csproj.CopyComplete
 C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\GUI\obj\Debug\GUI.csproj.AssemblyReference.cache

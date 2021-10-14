@@ -183,7 +183,7 @@ namespace GUI
         {
             ExecutandoAdministrador().Wait();
 
-            //Application.EnableVisualStyles();
+            Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             CarregarDriver().Wait();
 

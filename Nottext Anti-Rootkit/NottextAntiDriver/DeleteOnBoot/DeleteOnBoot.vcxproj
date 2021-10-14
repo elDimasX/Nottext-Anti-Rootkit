@@ -117,7 +117,7 @@
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
-    <TimeStampServer>http://timestamp.digicert.com </TimeStampServer>
+    <TimeStampServer>http://timestamp.digicert.com</TimeStampServer>
     <DisableProductionSignDebugWarnings>false</DisableProductionSignDebugWarnings>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -147,6 +147,7 @@
       <AdditionalDependencies>fltmgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <AdditionalOptions>/INTEGRITYCHECK:NO %(AdditionalOptions)</AdditionalOptions>
+      <EntryPointSymbol>GsDriverEntry@8</EntryPointSymbol>
     </Link>
     <ClCompile>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -154,6 +155,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories); C:\Program Files (x86)\Windows Kits\10\Include\10.0.20348.0\km</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
+    <DriverSign />
     <DriverSign>
       <AdditionalOptions>/fd SHA1 %(AdditionalOptions)</AdditionalOptions>
     </DriverSign>
@@ -208,13 +210,16 @@
     <ClCompile Include="driver.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="deleteFile.h" />
     <ClInclude Include="files.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="hideprocess.h" />
     <ClInclude Include="irps.h" />
+    <ClInclude Include="listdrivers.h" />
     <ClInclude Include="minifilter.h" />
     <ClInclude Include="process.h" />
     <ClInclude Include="filesIRP.h" />
+    <ClInclude Include="reg.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
