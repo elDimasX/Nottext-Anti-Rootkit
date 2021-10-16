@@ -10,7 +10,6 @@ Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, q
 ![2021-10-16 (4)](https://user-images.githubusercontent.com/51800283/137601122-1c6d9651-3265-46fc-a02a-4eb2eaa304ad.png)
 ![2021-10-16 (7)](https://user-images.githubusercontent.com/51800283/137601188-96f3ac96-2899-4f77-96dc-b5ab09859249.png)
 
-
 # Modo de teste
 Para testar o Nottext Anti-Rootkit, você precisa ativar o Windows em modo de teste (testsigning on), e depois, executar o "Nottext Anti-Rootkit.exe", ele fará todo o resto
 
@@ -20,7 +19,7 @@ Se você tiver alguma ideia de como posso melhorar meu anti-rootkit, por favor m
 # Atualizações recentes
 
 # 1.0.0.5
-Essa versão inclu novas funcionalidades e melhorias
+Essa versão inclui novas funcionalidades e melhorias
 - Remoção de pastas melhorado
 - Bloquear novos processos de serem executados
 - IRP para listar pasta (permitindo localizar arquivos ocultos por rootkit)
