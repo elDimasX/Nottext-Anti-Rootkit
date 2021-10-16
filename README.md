@@ -8,7 +8,7 @@ Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, q
 ![2021-10-16 (2)](https://user-images.githubusercontent.com/51800283/137601115-928905f6-5e68-473f-9563-81ada937e729.png)
 ![2021-10-16 (3)](https://user-images.githubusercontent.com/51800283/137601118-da867b95-da0d-4494-ada5-115379cf6121.png)
 ![2021-10-16 (4)](https://user-images.githubusercontent.com/51800283/137601122-1c6d9651-3265-46fc-a02a-4eb2eaa304ad.png)
-![2021-10-16 (5)](https://user-images.githubusercontent.com/51800283/137601124-74cffcd6-e938-4d40-9773-174ea17cb30e.png)
+![2021-10-16 (7)](https://user-images.githubusercontent.com/51800283/137601188-96f3ac96-2899-4f77-96dc-b5ab09859249.png)
 
 
 # Modo de teste
@@ -23,7 +23,7 @@ Se você tiver alguma ideia de como posso melhorar meu anti-rootkit, por favor m
 Essa versão inclu novas funcionalidades e melhorias
 - Remoção de pastas melhorado
 - Bloquear novos processos de serem executados
-- IRP para listar pasta (permitindo localizar arquivos ocultos com rootkit)
+- IRP para listar pasta (permitindo localizar arquivos ocultos por rootkit)
 - Melhoria na renomeação de arquivos
 - Opção de mostrar erros
 - Uma pequena melhoria na interface
