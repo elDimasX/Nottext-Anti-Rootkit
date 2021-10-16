@@ -3,12 +3,12 @@
 # Anti-Rootkit
 Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, que não poderiam ser acessados através do user-mode, as funções funcionam porque são executadas em kernel-mode<br/>
 
+![2021-10-16](https://user-images.githubusercontent.com/51800283/137601125-c831d027-6bc9-46a1-88d3-a8958e0082cf.png)
 ![2021-10-16 (1)](https://user-images.githubusercontent.com/51800283/137601114-80b0be85-caa4-403b-8f76-5da960029d79.png)
 ![2021-10-16 (2)](https://user-images.githubusercontent.com/51800283/137601115-928905f6-5e68-473f-9563-81ada937e729.png)
 ![2021-10-16 (3)](https://user-images.githubusercontent.com/51800283/137601118-da867b95-da0d-4494-ada5-115379cf6121.png)
 ![2021-10-16 (4)](https://user-images.githubusercontent.com/51800283/137601122-1c6d9651-3265-46fc-a02a-4eb2eaa304ad.png)
 ![2021-10-16 (5)](https://user-images.githubusercontent.com/51800283/137601124-74cffcd6-e938-4d40-9773-174ea17cb30e.png)
-![2021-10-16](https://user-images.githubusercontent.com/51800283/137601125-c831d027-6bc9-46a1-88d3-a8958e0082cf.png)
 
 
 # Modo de teste
