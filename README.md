@@ -1,14 +1,15 @@
 # Nottext-Anti-Rootkit
 
 # Anti-Rootkit
-Essa ferramenta serve para verificar arquivos / processos / serviços que não poderiam ser acessados através do user-mode, as funções funcionam porque são executadas em kernel-mode<br/>
+Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, que não poderiam ser acessados através do user-mode, as funções funcionam porque são executadas em kernel-mode<br/>
 
-![2021-10-14 (1)](https://user-images.githubusercontent.com/51800283/137385420-e3e25190-f93a-409e-879f-c5be3977a649.png)
-![2021-10-14 (2)](https://user-images.githubusercontent.com/51800283/137385426-15b0573c-e590-4658-8793-3b3a118a708b.png)
-![2021-10-14 (3)](https://user-images.githubusercontent.com/51800283/137385433-3a9aa942-882f-4a6c-9913-2e71e2b4d81e.png)
-![2021-10-14 (4)](https://user-images.githubusercontent.com/51800283/137385439-466c617d-fd08-41ea-bced-4e8e80b659bf.png)
-![2021-10-14 (5)](https://user-images.githubusercontent.com/51800283/137385445-21c98ee7-1af3-4892-8a3e-770a3c8d409b.png)
-![2021-10-14 (6)](https://user-images.githubusercontent.com/51800283/137385459-0ccce15b-6bf7-4b67-8a36-ea3874889a7a.png)
+![2021-10-16 (1)](https://user-images.githubusercontent.com/51800283/137601114-80b0be85-caa4-403b-8f76-5da960029d79.png)
+![2021-10-16 (2)](https://user-images.githubusercontent.com/51800283/137601115-928905f6-5e68-473f-9563-81ada937e729.png)
+![2021-10-16 (3)](https://user-images.githubusercontent.com/51800283/137601118-da867b95-da0d-4494-ada5-115379cf6121.png)
+![2021-10-16 (4)](https://user-images.githubusercontent.com/51800283/137601122-1c6d9651-3265-46fc-a02a-4eb2eaa304ad.png)
+![2021-10-16 (5)](https://user-images.githubusercontent.com/51800283/137601124-74cffcd6-e938-4d40-9773-174ea17cb30e.png)
+![2021-10-16](https://user-images.githubusercontent.com/51800283/137601125-c831d027-6bc9-46a1-88d3-a8958e0082cf.png)
+
 
 # Modo de teste
 Para testar o Nottext Anti-Rootkit, você precisa ativar o Windows em modo de teste (testsigning on), e depois, executar o "Nottext Anti-Rootkit.exe", ele fará todo o resto
@@ -17,6 +18,15 @@ Para testar o Nottext Anti-Rootkit, você precisa ativar o Windows em modo de te
 Se você tiver alguma ideia de como posso melhorar meu anti-rootkit, por favor me avise
 
 # Atualizações recentes
+
+# 1.0.0.5
+Essa versão inclu novas funcionalidades e melhorias
+- Remoção de pastas melhorado
+- Bloquear novos processos de serem executados
+- IRP para listar pasta (permitindo localizar arquivos ocultos com rootkit)
+- Melhoria na renomeação de arquivos
+- Opção de mostrar erros
+- Uma pequena melhoria na interface
 
 # 1.0.0.4
 Essa versão inclui novas funcionalidades e melhorias
