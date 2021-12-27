@@ -83,16 +83,6 @@ namespace GUI.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Byte[].
         /// </summary>
-        internal static byte[] Guna_UI2 {
-            get {
-                object obj = ResourceManager.GetObject("Guna_UI2", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Byte[].
-        /// </summary>
         internal static byte[] KernelProcessList {
             get {
                 object obj = ResourceManager.GetObject("KernelProcessList", resourceCulture);
