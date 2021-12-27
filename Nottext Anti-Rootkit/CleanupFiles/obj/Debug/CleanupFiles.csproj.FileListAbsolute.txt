@@ -1,7 +1,0 @@
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\bin\Debug\CleanupFiles.exe.config
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\bin\Debug\CleanupFiles.exe
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\bin\Debug\CleanupFiles.pdb
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\obj\Debug\CleanupFiles.csproj.AssemblyReference.cache
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\obj\Debug\CleanupFiles.csproj.CoreCompileInputs.cache
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\obj\Debug\CleanupFiles.exe
-C:\Users\dimas\OneDrive\Documentos\Visual Studio Projetos\Projetos\C#\Nottext Anti-Rootkit\CleanupFiles\obj\Debug\CleanupFiles.pdb
