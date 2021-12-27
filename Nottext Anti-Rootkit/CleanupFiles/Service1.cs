@@ -67,6 +67,18 @@ namespace CleanupFiles
 
             try
             {
+                Directory.Delete(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\Drivers", true);
+            }
+            catch (Exception) { }
+
+            try
+            {
+                File.Delete(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\KernelProcessList.exe");
+            }
+            catch (Exception) { }
+
+            try
+            {
                 string local = '"' + Assembly.GetExecutingAssembly().Location + '"';
                 string texto = "timeout 2\r\ndel /f " + local + "\r\ndel /f C:\\cleanup.bat";
 
