@@ -81,8 +81,6 @@ namespace GUI
                 // Salve o programa que atualiza os processos
                 File.WriteAllBytes(Application.StartupPath + "\\KernelProcessList.exe", Properties.Resources.KernelProcessList);
 
-                File.WriteAllBytes(Application.StartupPath + "\\Guna.UI2.dll", Properties.Resources.Guna_UI2);
-
                 // Salve o CAT
                 File.WriteAllBytes(pastaDrivers + "NottextAntiDriver.cat", Properties.Resources.nottextantidriver1);
 
@@ -117,7 +115,14 @@ namespace GUI
             {
                 if (ex.Message.Contains("Não é possível iniciar o serviço"))
                 {
-                    MessageBox.Show("Não foi possível extrair os arquivos necessários\r\nAtive o modo de teste do Windows para que seja possível continuar", "Nottext Anti-Rootkit", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (MessageBox.Show("Não foi possível carregar o driver necessário\r\nDeseja ativar o modo de teste do Windows para que seja possível continuar?", "Nottext Anti-Rootkit", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK)
+                    {
+                        // Modo de teste
+                        await IniciarProcesso("bcdedit.exe", "-set testsigning on");
+
+                        // Mensagem
+                        MessageBox.Show("Sucesso! Reinicie o PC e execute o Nottext Anti-Rootkit, ele abrirá normalmente", "Nottext Anti-Rootkit", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 } else
                 {
                     MessageBox.Show("Não foi possível extrair os arquivos necessários\r\n" + ex.Message, "Nottext Anti-Rootkit", MessageBoxButtons.OK, MessageBoxIcon.Error);

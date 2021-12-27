@@ -44,6 +44,8 @@ namespace GUI
             this.menuProcessos = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.finalizarProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.finalizarBloquearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.suspenderProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resumirProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.protegerProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ocultarProcessoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -81,6 +83,9 @@ namespace GUI
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.autoDefesa = new System.Windows.Forms.CheckBox();
+            this.desativarModoTeste = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.bloquearProcessos = new System.Windows.Forms.CheckBox();
             this.mostrarErros = new System.Windows.Forms.CheckBox();
             this.desligar = new System.Windows.Forms.Button();
@@ -91,9 +96,7 @@ namespace GUI
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.arrastar = new Guna.UI2.WinForms.Guna2ResizeForm(this.components);
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.label6 = new System.Windows.Forms.Label();
             this.menuArquivos.SuspendLayout();
             this.menuProcessos.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -199,12 +202,14 @@ namespace GUI
             this.menuProcessos.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.finalizarProcessoToolStripMenuItem,
             this.finalizarBloquearToolStripMenuItem,
+            this.suspenderProcessoToolStripMenuItem,
+            this.resumirProcessoToolStripMenuItem,
             this.protegerProcessoToolStripMenuItem,
             this.ocultarProcessoToolStripMenuItem,
             this.toolStripSeparator2,
             this.listarProcessosStripMenuItem});
             this.menuProcessos.Name = "menuArquivos";
-            this.menuProcessos.Size = new System.Drawing.Size(181, 120);
+            this.menuProcessos.Size = new System.Drawing.Size(181, 164);
             // 
             // finalizarProcessoToolStripMenuItem
             // 
@@ -222,12 +227,27 @@ namespace GUI
             this.finalizarBloquearToolStripMenuItem.Text = "Finalizar && Bloquear";
             this.finalizarBloquearToolStripMenuItem.Click += new System.EventHandler(this.finalizarBloquearToolStripMenuItem_Click);
             // 
+            // suspenderProcessoToolStripMenuItem
+            // 
+            this.suspenderProcessoToolStripMenuItem.Name = "suspenderProcessoToolStripMenuItem";
+            this.suspenderProcessoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.suspenderProcessoToolStripMenuItem.Text = "Suspender processo";
+            this.suspenderProcessoToolStripMenuItem.Click += new System.EventHandler(this.suspenderProcessoToolStripMenuItem_Click);
+            // 
+            // resumirProcessoToolStripMenuItem
+            // 
+            this.resumirProcessoToolStripMenuItem.Name = "resumirProcessoToolStripMenuItem";
+            this.resumirProcessoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.resumirProcessoToolStripMenuItem.Text = "Resumir processo";
+            this.resumirProcessoToolStripMenuItem.Click += new System.EventHandler(this.resumirProcessoToolStripMenuItem_Click);
+            // 
             // protegerProcessoToolStripMenuItem
             // 
             this.protegerProcessoToolStripMenuItem.ForeColor = System.Drawing.Color.Black;
             this.protegerProcessoToolStripMenuItem.Name = "protegerProcessoToolStripMenuItem";
             this.protegerProcessoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.protegerProcessoToolStripMenuItem.Text = "Proteger processo";
+            this.protegerProcessoToolStripMenuItem.Visible = false;
             this.protegerProcessoToolStripMenuItem.Click += new System.EventHandler(this.protegerProcessoToolStripMenuItem_Click);
             // 
             // ocultarProcessoToolStripMenuItem
@@ -566,6 +586,8 @@ namespace GUI
             // tabPage3
             // 
             this.tabPage3.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage3.Controls.Add(this.autoDefesa);
+            this.tabPage3.Controls.Add(this.desativarModoTeste);
             this.tabPage3.Controls.Add(this.label6);
             this.tabPage3.Controls.Add(this.bloquearProcessos);
             this.tabPage3.Controls.Add(this.mostrarErros);
@@ -579,6 +601,40 @@ namespace GUI
             this.tabPage3.Size = new System.Drawing.Size(808, 515);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Configurações";
+            // 
+            // autoDefesa
+            // 
+            this.autoDefesa.AutoSize = true;
+            this.autoDefesa.Checked = true;
+            this.autoDefesa.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autoDefesa.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.autoDefesa.Location = new System.Drawing.Point(453, 123);
+            this.autoDefesa.Name = "autoDefesa";
+            this.autoDefesa.Size = new System.Drawing.Size(91, 19);
+            this.autoDefesa.TabIndex = 9;
+            this.autoDefesa.Text = "Auto-defesa";
+            this.autoDefesa.UseVisualStyleBackColor = true;
+            this.autoDefesa.CheckedChanged += new System.EventHandler(this.autoDefesa_CheckedChanged);
+            // 
+            // desativarModoTeste
+            // 
+            this.desativarModoTeste.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.desativarModoTeste.Location = new System.Drawing.Point(17, 165);
+            this.desativarModoTeste.Name = "desativarModoTeste";
+            this.desativarModoTeste.Size = new System.Drawing.Size(180, 22);
+            this.desativarModoTeste.TabIndex = 8;
+            this.desativarModoTeste.Text = "DESATIVAR MODO DE TESTE ";
+            this.desativarModoTeste.UseVisualStyleBackColor = true;
+            this.desativarModoTeste.Click += new System.EventHandler(this.desativarModoTeste_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(7, 96);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(86, 15);
+            this.label6.TabIndex = 7;
+            this.label6.Text = "Outras opções:";
             // 
             // bloquearProcessos
             // 
@@ -668,7 +724,7 @@ namespace GUI
             this.label5.Cursor = System.Windows.Forms.Cursors.Hand;
             this.label5.Font = new System.Drawing.Font("Yu Gothic UI", 9F);
             this.label5.ForeColor = System.Drawing.Color.Blue;
-            this.label5.Location = new System.Drawing.Point(52, 88);
+            this.label5.Location = new System.Drawing.Point(54, 73);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(276, 15);
             this.label5.TabIndex = 3;
@@ -678,15 +734,13 @@ namespace GUI
             // 
             // label4
             // 
-            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.BackColor = System.Drawing.Color.Transparent;
             this.label4.Location = new System.Drawing.Point(7, 14);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(794, 177);
             this.label4.TabIndex = 1;
-            this.label4.Text = "Nottext Anti-Rootkit \r\n________________________\r\n\r\nVersão do aplicativo: 1.0.0.4\r" +
-    "\nDesenvolvido em: C# e C\r\nGitHub: ";
+            this.label4.Text = "Nottext Anti-Rootkit \r\n—————————————\r\nVersão do aplicativo: 1.0.0.6\r\nDesenvolvido" +
+    " em: C# e C\r\nGitHub: ";
             // 
             // label3
             // 
@@ -706,15 +760,6 @@ namespace GUI
             this.columnHeader7.Text = "Arquivo";
             this.columnHeader7.Width = 781;
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(7, 96);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(83, 15);
-            this.label6.TabIndex = 7;
-            this.label6.Text = "Outras opções";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -723,7 +768,7 @@ namespace GUI
             this.ClientSize = new System.Drawing.Size(822, 558);
             this.Controls.Add(this.panel1);
             this.Font = new System.Drawing.Font("Leelawadee UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(48)))), ((int)(((byte)(57)))), ((int)(((byte)(96)))));
+            this.ForeColor = System.Drawing.Color.Black;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(838, 597);
             this.Name = "Form1";
@@ -768,7 +813,6 @@ namespace GUI
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ToolStripMenuItem protegerProcessoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem protegerArquivoToolStripMenuItem;
-        private Guna.UI2.WinForms.Guna2ResizeForm arrastar;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TextBox label1;
@@ -813,6 +857,10 @@ namespace GUI
         private System.Windows.Forms.CheckBox mostrarErros;
         private System.Windows.Forms.CheckBox bloquearProcessos;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button desativarModoTeste;
+        private System.Windows.Forms.CheckBox autoDefesa;
+        private System.Windows.Forms.ToolStripMenuItem suspenderProcessoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resumirProcessoToolStripMenuItem;
     }
 }
 

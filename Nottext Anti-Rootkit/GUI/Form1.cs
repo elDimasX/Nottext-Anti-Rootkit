@@ -1,13 +1,17 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -27,6 +31,7 @@ namespace GUI
         static string arquivosDeletarBoot = "C:\\ProgramData\\NtAnti-Rootkit\\deleteOnBoot.txt";
         static string driversListados = "C:\\ProgramData\\NtAnti-Rootkit\\driverScan.txt";
         static string servicosListados = "C:\\ProgramData\\NtAnti-Rootkit\\serviceScan.txt";
+        static string processoMalicioso = "C:\\ProgramData\\NtAnti-Rootkit\\maliciousProcess.txt";
 
         /// <summary>
         /// Mostra uma messagebox
@@ -171,6 +176,14 @@ namespace GUI
                 public static uint CARREGAR_SERVICO = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0100, METHOD_BUFFERED, FILE_ANY_ACCESS);
 
                 public static uint BLOQUEAR_PROCESSOS = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0102, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint AUTO_DEFESA = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0104, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint SUSPENDER_PROCESSO = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0106, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint RESUMIR_PROCESSO = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0108, METHOD_BUFFERED, FILE_ANY_ACCESS);
+
+                public static uint PROTEGER_NOTTEXT = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x110, METHOD_BUFFERED, FILE_ANY_ACCESS);
             }
 
             /// <summary>
@@ -543,6 +556,16 @@ namespace GUI
                         item.SubItems.Add(pid);
 
                         lt2.Items.Add(item);
+
+                        try
+                        {
+                            // Tente obter o nome deste processo, se falhar, provavelmente
+                            // É um rootkit de modo usuário, então, devemos marcar com bandeira
+                            // Vermelha
+                            string nome = Process.GetProcessById(Int32.Parse(pid)).ProcessName;
+                        } catch (Exception) {
+                            item.ForeColor = Color.Red;
+                        }
                     }
                 } catch (Exception) { }
             }
@@ -554,7 +577,7 @@ namespace GUI
             /// <returns></returns>
             public static bool TerminarProcesso(string pid)
             {
-                // Falhou
+                // Retorne
                 return Kernel.EnviarMensagem(pid, Kernel.CTL_CODES.TERMINAR_PROCESSO);
             }
 
@@ -565,8 +588,28 @@ namespace GUI
             /// <returns></returns>
             public static bool TerminarProcessoEBloquear(string pid)
             {
-                // Falhou
+                // Retorne
                 return Kernel.EnviarMensagem(pid, Kernel.CTL_CODES.TERMINAR_PROCESSO_E_BLOQUEAR);
+            }
+
+            /// <summary>
+            /// Suspende um processo
+            /// </summary>
+            /// <param name="pid"></param>
+            /// <returns></returns>
+            public static bool SuspenderProcesso(string pid)
+            {
+                return Kernel.EnviarMensagem(pid, Kernel.CTL_CODES.SUSPENDER_PROCESSO);
+            }
+
+            /// <summary>
+            /// Resume um processo
+            /// </summary>
+            /// <param name="pid"></param>
+            /// <returns></returns>
+            public static bool ResumirProcesso(string pid)
+            {
+                return Kernel.EnviarMensagem(pid, Kernel.CTL_CODES.RESUMIR_PROCESSO);
             }
         }
 
@@ -594,12 +637,29 @@ namespace GUI
                         // Local do arquivo
                         string arquivo = linha.Split(new[] { " Local: " }, StringSplitOptions.None)[1];
 
+                        // Somente o nome do driver
+                        string nome = linha.Replace(" Local: ", "").Replace(arquivo, "");
+
                         // Novo item
-                        ListViewItem item = new ListViewItem(linha);
+                        ListViewItem item = new ListViewItem(nome);
+
+                        // Substitua o SystemRoot para Windows, para detectar o arquivo
+                        arquivo = arquivo.Replace("\\SystemRoot\\", "C:\\Windows\\");
+
+                        // Adicione o arquivo
                         item.SubItems.Add(arquivo);
 
-                        item.Text = item.Text.Replace(" Local: ", "").Replace(arquivo, "");
+                        try
+                        {
+                            // Se for diferente de ntoskrnl.exe, e o arquivo não existir
+                            // Pode ser um rootkit, já que o kernel localizou, e user-mode não
+                            if (arquivo != "ntoskrnl.exe" && !File.Exists(arquivo))
+                            {
+                                item.ForeColor = Color.Red;
+                            }
+                        } catch (Exception) { }
 
+                        // Se for diferente de NULL e tiver mais de 1 caractere
                         if (linha.Length > 1 && arquivo != "(null)")
                             lt3.Items.Add(item);
                     }
@@ -770,10 +830,102 @@ namespace GUI
         }
 
         /// <summary>
+        /// Avisa quando um processo tenta nos finalizar
+        /// </summary>
+        private void TentandoFinalizarProcesso()
+        {
+            // Novo thread
+           new Thread(async () =>
+           {
+               // Repetição infinita
+               while (true)
+               {
+                   // Espere
+                   await Task.Delay(1000);
+
+                   try
+                   {
+                       // Se esse arquivo existir, o driver detectou algo
+                       if (File.Exists(processoMalicioso))
+                       {
+                           // Processo
+                           string processo = File.ReadAllText(processoMalicioso, Encoding.GetEncoding("iso-8859-1"));
+
+                           // Obtém o PID
+                           string arquivo = processo.Split(new[] { " Arquivo: " }, StringSplitOptions.None)[1];
+
+                           // Obtenha somente o número
+                           string pid = processo.Replace(" Arquivo: ", "").Replace(arquivo, "").Replace("PID: ", "");
+
+                           // Mostre o alerta
+                           AutoProtecaoAlerta alerta = new AutoProtecaoAlerta(pid, arquivo);
+                           alerta.ShowDialog();
+
+                           // Se for para resumir o processo
+                           if (alerta.resumirProcesso.Checked == true)
+                           {
+                               // Resuma o processo
+                               Processos.ResumirProcesso(pid);
+                           }
+                           
+                           // Terminar processo marcado
+                           if (alerta.terminarProcesso.Checked == true)
+                           {
+                               // Resume o processo
+                               Processos.TerminarProcesso(pid);
+                           }
+
+                           // Se for para deletar
+                           if (alerta.deletarArquivo.Checked == true)
+                           {
+                               // Delete o arquivo
+                               Kernel.EnviarMensagem("\\??\\" + arquivo, Kernel.CTL_CODES.DELETAR_ARQUIVO);
+                           }
+
+                           // Bloquear processo
+                           if (alerta.bloquearProcesso.Checked == true)
+                           {
+                               // Proteja o arquivo e depois delete ele, fazendo ser bloqueado
+                               Kernel.EnviarMensagem("\\??\\" + arquivo, Kernel.CTL_CODES.PROTEGER_ARQUIVO);
+                               Kernel.EnviarMensagem("\\??\\" + arquivo, Kernel.CTL_CODES.DELETAR_ARQUIVO);
+                           }
+
+                           try
+                           {
+                               File.Delete(processoMalicioso);
+                           } catch (Exception) { }
+                       }
+                   } catch (Exception) { }
+               }
+           }).Start();
+        }
+
+        /// <summary>
+        /// Altera o texto do FORM, para tentar impedir rootkits
+        /// </summary>
+        private void AltrarTextoForm()
+        {
+            // Aleatorio
+            Random aleatorio = new Random();
+
+            // Letras
+            string letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            string texto = new string (Enumerable.Repeat(letras, 15).Select(s => s[aleatorio.Next(s.Length)]).ToArray());
+
+            this.Text = texto;
+        }
+
+        /// <summary>
         /// Inicia tudo
         /// </summary>
         public Form1()
         {
+            // Nome do executavél
+            string executavelNome = Path.GetFileName(Assembly.GetEntryAssembly().Location);
+
+            // Proteja nosso processo
+            Kernel.EnviarMensagem(executavelNome, Kernel.CTL_CODES.PROTEGER_NOTTEXT);
+
             CheckForIllegalCrossThreadCalls = false;
             PageFileAtivado();
 
@@ -782,6 +934,9 @@ namespace GUI
 
             // Inicie
             InitializeComponent();
+
+            // Altere o texto
+            AltrarTextoForm();
 
             try
             {
@@ -817,8 +972,10 @@ namespace GUI
             Drivers.ListarServicos();
 
             // Delete o arquivo GUNA
-            ListViewItem guna = new ListViewItem(Application.StartupPath + "\\Guna.UI2.dll");
-            Kernel.EnviarMensagem("\\??\\" + guna.Text, Kernel.CTL_CODES.DELETAR_ARQUIVO);
+            //ListViewItem guna = new ListViewItem(Application.StartupPath + "\\Guna.UI2.dll");
+            //Kernel.EnviarMensagem("\\??\\" + guna.Text, Kernel.CTL_CODES.DELETAR_ARQUIVO);
+
+            TentandoFinalizarProcesso();
         }
 
         /// <summary>
@@ -1062,6 +1219,15 @@ namespace GUI
         /// <param name="e"></param>
         private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (autoDefesa.Checked == true)
+            {
+                if (Mensagem("Deseja mesmo sair?", false) == false)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }    
+
             try
             {
                 // Serviço
@@ -1306,6 +1472,7 @@ namespace GUI
             // Se confirmar
             if (Mensagem("Tem certeza? seu computador será desligado agora", false) == true)
             {
+                autoDefesa.Checked = false;
                 Kernel.EnviarMensagem("", Kernel.CTL_CODES.DESLIGAR_COMPUTADOR);
                 Close();
             }
@@ -1321,6 +1488,7 @@ namespace GUI
             // Se confirmar
             if (Mensagem("Tem certeza? seu computador será reiniciado agora", false) == true)
             {
+                autoDefesa.Checked = false;
                 Kernel.EnviarMensagem("", Kernel.CTL_CODES.REINICIAR_COMPUTADOR);
                 Close();
             }
@@ -1337,7 +1505,7 @@ namespace GUI
             {
                 string local = "";
 
-                Texto txt = new Texto("Digite o local que deseja ir (cuidado): ", local, "");
+                Texto txt = new Texto("Digite o local que deseja ir: ", local, "");
                 txt.ShowDialog();
                 local = txt.RetornarTexto();
 
@@ -1420,7 +1588,7 @@ namespace GUI
         {
             try
             {
-                if (Mensagem("Deseja mesmo proteger estes processos? quando eles foram finalizados, o sistema travará", false) == false)
+                if (Mensagem("Deseja mesmo proteger estes processos? todos os processos com este nome será protegido, e os processos não poderão ser finalizados no Gerenciador de Tarefas", false) == false)
                 {
                     return;
                 }
@@ -1429,7 +1597,7 @@ namespace GUI
                 foreach (ListViewItem item in listView2.SelectedItems)
                 {
                     // Protega o processo
-                    if (!Kernel.EnviarMensagem(item.SubItems[2].Text, Kernel.CTL_CODES.PROTEGER_PROCESSO))
+                    if (!Kernel.EnviarMensagem(item.Text, Kernel.CTL_CODES.PROTEGER_PROCESSO))
                     {
                         Mensagem("Falha ao proteger os processos\r\n" + item.Text, true);
                     }
@@ -1610,8 +1778,15 @@ namespace GUI
                 // Procure todos os itens selecionados
                 foreach (ListViewItem item in listView3.SelectedItems)
                 {
+                    // Deletar o arquivo selecionado
+                    string arquivoDeletar = item.SubItems[1].Text;
+
+                    // Se não conter, adicione
+                    if (!arquivoDeletar.Contains("\\??\\"))
+                        arquivoDeletar = "\\??\\" + arquivoDeletar;
+
                     // Se conseguir deletar
-                    if (Kernel.EnviarMensagem(item.SubItems[1].Text, Kernel.CTL_CODES.DELETAR_ARQUIVO) == true)
+                    if (Kernel.EnviarMensagem(arquivoDeletar, Kernel.CTL_CODES.DELETAR_ARQUIVO) == true)
                     {
                         item.SubItems[1].Text = "Arquivo deletado";
                     }
@@ -1632,6 +1807,88 @@ namespace GUI
         private void bloquearProcessos_CheckedChanged(object sender, EventArgs e)
         {
             Kernel.EnviarMensagem("", Kernel.CTL_CODES.BLOQUEAR_PROCESSOS);
+        }
+
+        /// <summary>
+        /// Desativa o modo de teste
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void desativarModoTeste_Click(object sender, EventArgs e)
+        {
+            if (Mensagem("Tem certeza que deseja desativar o modo de teste?", false) == false)
+            {
+                return;
+            }
+
+            try
+            {
+                // Desative
+                IniciarProcesso("bcdedit.set", "-set testsigning off");
+
+                Mensagem("Sucesso! Reinicie o PC para aplicar as alterações", false);
+            } catch (Exception) {
+
+                Mensagem("Ocorreu um erro ao realizar a operação", true);
+            }
+        }
+
+        /// <summary>
+        /// Quando alterar a auto-defesa
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void autoDefesa_CheckedChanged(object sender, EventArgs e)
+        {
+            Kernel.EnviarMensagem("", Kernel.CTL_CODES.AUTO_DEFESA);
+        }
+
+        /// <summary>
+        /// Suspende um processo
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void suspenderProcessoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Mensagem("Deseja mesmo suspender estes processos?", false) == false)
+                {
+                    return;
+                }
+
+                // Procure todos os itens selecionados
+                foreach (ListViewItem item in listView2.SelectedItems)
+                {
+                    // Suspenda os processos
+                    if (!Processos.SuspenderProcesso(item.SubItems[2].Text))
+                    {
+                        Mensagem("Falha ao suspender processo\r\n" + item.Text, true);
+                    }
+                }
+            } catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Resume os processos
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void resumirProcessoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Procure todos os itens selecionados
+                foreach (ListViewItem item in listView2.SelectedItems)
+                {
+                    // Suspenda os processos
+                    if (!Processos.ResumirProcesso(item.SubItems[2].Text))
+                    {
+                        Mensagem("Falha ao resumir processo\r\n" + item.Text, true);
+                    }
+                }
+            }
+            catch (Exception) { }
         }
     }
 }
