@@ -3,8 +3,8 @@
 # Anti-Rootkit
 Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, que não poderiam ser acessados através do user-mode, as funções funcionam porque são executadas em kernel-mode, tendo todo o acesso possível<br/>
 
-![2021-12-27 (8)](https://user-images.githubusercontent.com/51800283/147514170-70d84068-88ec-47d6-b742-665a121d17cd.png)
-![2021-12-27 (9)](https://user-images.githubusercontent.com/51800283/147514172-0f35b5eb-d9b1-4fdc-8b2d-8a71c9459150.png)
+![2023-03-01 (1)](https://user-images.githubusercontent.com/51800283/222134062-e3989e61-c25e-413f-b8d1-cdced741dd1e.png)
+![2023-03-01 (3)](https://user-images.githubusercontent.com/51800283/222134801-e07b592c-a640-4455-9411-753b101c061d.png)
 ![2021-12-27 (10)](https://user-images.githubusercontent.com/51800283/147514175-8de1cb0f-7656-4cc9-8cce-ed433527106f.png)
 ![2021-12-27 (11)](https://user-images.githubusercontent.com/51800283/147514177-970cbe74-db89-408d-959d-22ae3146e52e.png)
 ![2021-12-27 (12)](https://user-images.githubusercontent.com/51800283/147514181-0b8cadf1-05ce-4142-bd79-ab1fa23bb8e5.png)
@@ -17,6 +17,13 @@ Para testar o Nottext Anti-Rootkit, você precisa ativar o Windows em modo de te
 Se você tiver alguma ideia de como posso melhorar meu anti-rootkit, por favor me avise
 
 # Atualizações recentes
+
+## 1.0.0.6 (2)
+Essa versão só corrige alguns bugs e remove algumas funcionalidades
+- Corrigido bug que causava travamentos aleatóriamente quando iniciava o driver
+- Verifica a assinatura de drivers para verificar se eles são legítimos ou não
+- Corrigido a tela de serviço, deixando o local do arquivo e argumentos separados
+- Verifica se os serviços são um rooktit com arquivo escondido
 
 ## 1.0.0.6
 Essa versão inclui novas funcionaliades e melhorias
