@@ -4,7 +4,7 @@
 Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, que não poderiam ser acessados através do user-mode, as funções funcionam porque são executadas em kernel-mode, tendo todo o acesso possível<br/>
 
 ![2023-03-01 (1)](https://user-images.githubusercontent.com/51800283/222134062-e3989e61-c25e-413f-b8d1-cdced741dd1e.png)
-![2023-03-01 (3)](https://user-images.githubusercontent.com/51800283/222134801-e07b592c-a640-4455-9411-753b101c061d.png)
+![2023-03-01 (5)](https://user-images.githubusercontent.com/51800283/222171111-330baa5c-4460-49c6-8648-faf26db54daa.png)
 ![2021-12-27 (10)](https://user-images.githubusercontent.com/51800283/147514175-8de1cb0f-7656-4cc9-8cce-ed433527106f.png)
 ![2021-12-27 (11)](https://user-images.githubusercontent.com/51800283/147514177-970cbe74-db89-408d-959d-22ae3146e52e.png)
 ![2021-12-27 (12)](https://user-images.githubusercontent.com/51800283/147514181-0b8cadf1-05ce-4142-bd79-ab1fa23bb8e5.png)
