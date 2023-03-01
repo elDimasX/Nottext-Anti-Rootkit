@@ -8,7 +8,7 @@ Essa ferramenta serve para verificar arquivos / processos / serviços ocultos, q
 ![2021-12-27 (10)](https://user-images.githubusercontent.com/51800283/147514175-8de1cb0f-7656-4cc9-8cce-ed433527106f.png)
 ![2021-12-27 (11)](https://user-images.githubusercontent.com/51800283/147514177-970cbe74-db89-408d-959d-22ae3146e52e.png)
 ![2021-12-27 (12)](https://user-images.githubusercontent.com/51800283/147514181-0b8cadf1-05ce-4142-bd79-ab1fa23bb8e5.png)
-![2021-12-27 (13)](https://user-images.githubusercontent.com/51800283/147514182-1c6449e4-179f-4f2e-a034-f284a4920ce8.png)
+![2023-03-01 (6)](https://user-images.githubusercontent.com/51800283/222171355-db445746-1fbe-42f9-9251-578c086b428c.png)
 
 # Modo de teste
 Para testar o Nottext Anti-Rootkit, você precisa ativar o Windows em modo de teste (testsigning on), execute ele, e se não estiver em modo de teste, ele exibirá um aviso para ativar, após ativar, reinicie o computador
